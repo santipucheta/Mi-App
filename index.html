@@ -1753,5 +1753,54 @@ document.querySelectorAll('#tabs button').forEach(b=>{
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
+<style>
+#vrInstall{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;
+ display:none;align-items:center;gap:12px;background:#1e2a32;color:#fff;border:1px solid #37474f;
+ border-radius:14px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,.28);max-width:520px;margin:0 auto}
+#vrInstall img{width:42px;height:42px;border-radius:10px;flex-shrink:0}
+#vrInstall .t{flex:1;min-width:0;line-height:1.3}
+#vrInstall .t b{display:block;font-size:14px}
+#vrInstall .t span{font-size:11.5px;color:#b0bec5}
+#vrInstall button{border:none;border-radius:9px;padding:10px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
+#vrGo{background:#f9a825;color:#1e2a32}
+#vrNo{background:none;color:#90a4ae;padding:10px 4px}
+</style>
+
+<div id="vrInstall">
+  <img src="icon-192x192.png" alt="">
+  <div class="t"><b>Instalar Vida de Ruta</b><span id="vrTxt">Queda como app, funciona sin internet</span></div>
+  <button id="vrGo">Instalar</button>
+  <button id="vrNo">&times;</button>
+</div>
+
+<script>
+(function(){
+ var box=document.getElementById('vrInstall'),go=document.getElementById('vrGo'),
+     no=document.getElementById('vrNo'),txt=document.getElementById('vrTxt'),deferred=null;
+ function show(){box.style.display='flex';}
+ function hide(){box.style.display='none';}
+
+ // Si ya esta instalada, no molestar
+ var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+ if(standalone) return;
+ if(localStorage.getItem('vr_install_no')==='1') return;
+
+ // Android / Chrome / Edge: instalacion real
+ window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();deferred=e;show();
+ });
+
+ go.onclick=function(){
+  if(deferred){deferred.prompt();deferred.userChoice.then(function(){deferred=null;hide();});}
+  else{alert('En iPhone: toca Compartir y despues "Agregar a pantalla de inicio".');}
+ };
+ no.onclick=function(){localStorage.setItem('vr_install_no','1');hide();};
+ window.addEventListener('appinstalled',function(){hide();});
+
+ // iPhone/iPad con Safari: no existe beforeinstallprompt, mostramos instruccion
+ var iOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+ if(iOS){txt.textContent='Compartir → Agregar a pantalla de inicio';go.textContent='Como';show();}
+})();
+</script>
 </body>
 </html>
