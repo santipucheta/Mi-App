@@ -2,7 +2,7 @@
   "name": "Vida de Ruta — La Samineta",
   "short_name": "Vida de Ruta",
   "description": "App offline para registrar la Ruta Sur: gastos, hitos, camión, comidas y mucho más",
-  "start_url": "/vida-ruta_3.html",
+  "start_url": "/",
   "display": "standalone",
   "scope": "/",
   "orientation": "portrait-primary",
