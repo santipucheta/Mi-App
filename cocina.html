@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cocina de Ruta · Ruta Sur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Karla:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#E6E9E3; --superficie:#F4F6F1; --petroleo:#123240; --esmalte:#1D5567;
+  --mostaza:#D9A426; --senal:#3F7D5A; --tinta:#0C1B22; --tenue:#5C6E74;
+  --linea:rgba(18,50,64,.18);
+  --display:'Saira Condensed',Impact,'Arial Narrow',sans-serif;
+  --cuerpo:'Karla','Helvetica Neue',Arial,sans-serif;
+  --dato:'Space Mono','SFMono-Regular',Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--cuerpo);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px 96px}
+
+header.chapa{
+  background:var(--petroleo);
+  background-image:
+    radial-gradient(circle at 12% 22%, rgba(255,255,255,.10) 0 1.2px, transparent 1.3px),
+    radial-gradient(circle at 63% 71%, rgba(255,255,255,.08) 0 1.4px, transparent 1.5px),
+    radial-gradient(circle at 88% 31%, rgba(255,255,255,.07) 0 1px, transparent 1.1px),
+    radial-gradient(circle at 34% 84%, rgba(255,255,255,.09) 0 1.1px, transparent 1.2px);
+  background-size:70px 70px,110px 110px,90px 90px,130px 130px;
+  color:#F4F6F1;border-bottom:5px solid var(--mostaza);
+}
+.chapa-in{max-width:1140px;margin:0 auto;padding:26px 16px 22px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.marca{display:flex;align-items:center;gap:14px}
+.escudo{flex:none;width:52px;height:60px;border:2.5px solid var(--mostaza);border-radius:6px 6px 26px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.escudo b{font-family:var(--display);font-size:26px;font-weight:800;color:var(--mostaza)}
+.escudo span{font-family:var(--dato);font-size:7px;letter-spacing:.14em;color:rgba(244,246,241,.75);margin-top:3px}
+h1{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(30px,7vw,46px);margin:0;line-height:.92}
+.bajada{font-family:var(--dato);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(244,246,241,.72);margin-top:7px}
+.placa{font-family:var(--dato);font-size:11px;line-height:1.7;letter-spacing:.04em;border:1px solid rgba(217,164,38,.5);border-radius:4px;padding:8px 12px;color:rgba(244,246,241,.85)}
+.placa b{color:var(--mostaza);font-weight:700}
+
+nav.rutas{position:sticky;top:0;z-index:30;background:var(--papel);border-bottom:1px solid var(--linea);box-shadow:0 6px 14px -12px rgba(12,27,34,.5)}
+.rutas-in{max-width:1140px;margin:0 auto;padding:9px 10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.rutas-in::-webkit-scrollbar{display:none}
+.tab{flex:none;font-family:var(--display);text-transform:uppercase;font-weight:700;font-size:16px;letter-spacing:.05em;padding:8px 14px;border:1.5px solid var(--linea);background:transparent;color:var(--esmalte);border-radius:5px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.tab:hover{border-color:var(--esmalte)}
+.tab[aria-selected="true"]{background:var(--petroleo);border-color:var(--petroleo);color:#F4F6F1}
+.tab .n{font-family:var(--dato);font-size:11px;font-weight:700;margin-left:6px;padding:1px 5px;border-radius:20px;background:var(--mostaza);color:var(--petroleo)}
+
+.filtros{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:22px 0 4px}
+.filtros .rot{font-family:var(--dato);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue);margin-right:2px}
+.chip{font-size:13px;font-weight:600;padding:5px 11px;border-radius:20px;border:1.5px solid var(--linea);background:transparent;color:var(--esmalte);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--esmalte)}
+.chip[aria-pressed="true"]{background:var(--esmalte);border-color:var(--esmalte);color:#F4F6F1}
+
+.grilla{display:grid;gap:14px;grid-template-columns:1fr;margin-top:18px}
+@media(min-width:640px){.grilla{grid-template-columns:1fr 1fr}}
+@media(min-width:1000px){.grilla{grid-template-columns:1fr 1fr 1fr}}
+
+.plato{background:var(--superficie);border:1.5px solid var(--linea);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;transition:border-color .15s}
+.plato.elegido{border-color:var(--senal);box-shadow:inset 0 0 0 1.5px var(--senal)}
+.plato-cab{padding:14px 14px 0}
+.cejilla{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cejilla span{font-family:var(--dato);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--tenue)}
+.plato h3{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.05;text-transform:uppercase;margin:6px 0 0;color:var(--petroleo)}
+.plato .desc{font-size:13.5px;color:var(--tenue);margin:6px 0 0;line-height:1.45}
+.rinde-b{display:block;margin:9px 14px 0;font-family:var(--dato);font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:rgba(217,164,38,.2);border-left:3px solid var(--mostaza);color:#7A5709;padding:5px 8px;border-radius:0 4px 4px 0}
+.marcas{display:flex;flex-wrap:wrap;gap:5px;padding:11px 14px 0}
+.marca-t{font-family:var(--dato);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2.5px 7px;border-radius:3px;border:1px solid var(--linea);color:var(--tenue)}
+.marca-t.frio{border-color:rgba(29,85,103,.55);color:var(--esmalte);background:rgba(29,85,103,.07)}
+.marca-t.seco{border-color:rgba(217,164,38,.7);color:#8A6410;background:rgba(217,164,38,.13)}
+.marca-t.agua0{border-color:rgba(63,125,90,.6);color:#2F5F44;background:rgba(63,125,90,.1)}
+
+.tablero{display:grid;grid-template-columns:repeat(4,1fr);margin:12px 14px 0;border:1px solid var(--linea);border-radius:6px;overflow:hidden;background:#fff}
+.celda{padding:7px 4px;text-align:center;border-right:1px solid var(--linea)}
+.celda:last-child{border-right:none}
+.celda b{display:block;font-family:var(--dato);font-weight:700;font-size:14px;color:var(--petroleo);line-height:1.1}
+.celda span{display:block;font-family:var(--dato);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tenue);margin-top:2px}
+.celda.prot{background:rgba(217,164,38,.16)}
+.celda.prot b{color:#7A5709}
+
+.plato-pie{margin-top:auto;padding:12px 14px 14px;display:flex;gap:8px;align-items:center}
+.ver{flex:1;font-weight:600;font-size:13px;padding:8px 10px;border-radius:6px;border:1.5px solid var(--linea);background:transparent;color:var(--esmalte);cursor:pointer;font-family:var(--cuerpo)}
+.ver:hover{border-color:var(--esmalte)}
+.contador{display:flex;align-items:center;border:1.5px solid var(--petroleo);border-radius:6px;overflow:hidden}
+.contador button{font-family:var(--display);font-size:19px;font-weight:700;width:34px;height:35px;border:none;background:var(--petroleo);color:#F4F6F1;cursor:pointer;line-height:1}
+.contador .veces{font-family:var(--dato);font-weight:700;font-size:14px;min-width:30px;text-align:center;color:var(--petroleo)}
+.sumar{font-family:var(--display);text-transform:uppercase;font-weight:700;font-size:15px;letter-spacing:.06em;padding:8px 15px;border:none;border-radius:6px;background:var(--mostaza);color:var(--petroleo);cursor:pointer}
+.sumar:hover{filter:brightness(1.06)}
+
+.receta{padding:0 14px 4px;font-size:14px;display:none}
+.receta.abierta{display:block}
+.receta h4{font-family:var(--dato);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue);margin:14px 0 6px;font-weight:400}
+.receta ul{margin:0;padding-left:17px}
+.receta li{margin-bottom:4px;line-height:1.4}
+.receta ol{margin:0;padding-left:19px}
+.receta ol li{margin-bottom:6px}
+.receta .cant{font-family:var(--dato);font-size:12.5px;color:var(--esmalte)}
+.sust{list-style:none;padding:0;margin:0}
+.sust li{font-size:13px;color:var(--tenue);padding-left:14px;position:relative}
+.sust li::before{content:"→";position:absolute;left:0;color:var(--esmalte)}
+.tip{margin-top:12px;padding:9px 11px;border-left:3px solid var(--mostaza);background:rgba(217,164,38,.09);font-size:13px;line-height:1.45;border-radius:0 4px 4px 0}
+
+.oculto{display:none !important}
+.tablero-viaje{background:var(--petroleo);color:#F4F6F1;border-radius:10px;padding:18px;margin-top:22px}
+.tablero-viaje h2{font-family:var(--display);text-transform:uppercase;font-size:22px;margin:0;letter-spacing:.03em;font-weight:700}
+.aguja{display:flex;gap:3px;margin:14px 0 10px}
+.seg{flex:1;height:15px;border:1px solid rgba(244,246,241,.28);border-radius:2px}
+.seg.on{background:var(--mostaza);border-color:var(--mostaza)}
+.lecturas{display:flex;flex-wrap:wrap;gap:20px;font-family:var(--dato);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:rgba(244,246,241,.65)}
+.lecturas b{display:block;font-size:20px;color:var(--mostaza);margin-top:2px}
+.aviso{margin-top:13px;font-size:13px;color:rgba(244,246,241,.9);border-top:1px solid rgba(244,246,241,.2);padding-top:11px;line-height:1.45}
+
+.acciones{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.acciones button{font-family:var(--cuerpo);font-weight:600;font-size:13.5px;padding:8px 14px;border-radius:6px;cursor:pointer;border:1.5px solid var(--petroleo);background:transparent;color:var(--petroleo)}
+.acciones button:hover{background:var(--petroleo);color:#F4F6F1}
+.acciones button.peligro{border-color:#A4432E;color:#A4432E}
+.acciones button.peligro:hover{background:#A4432E;color:#F4F6F1}
+
+.bloque-tit{font-family:var(--display);text-transform:uppercase;font-size:15px;letter-spacing:.12em;color:var(--tenue);margin:34px 0 0;font-weight:600}
+.bloque-sub{font-size:13.5px;color:var(--tenue);margin:3px 0 0;max-width:640px;line-height:1.45}
+.rubro{margin-top:20px}
+.rubro-cab{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--petroleo);padding-bottom:5px}
+.rubro-cab h3{font-family:var(--display);text-transform:uppercase;font-size:19px;margin:0;letter-spacing:.05em;color:var(--petroleo);font-weight:700}
+.rubro-cab .cuenta{font-family:var(--dato);font-size:10.5px;color:var(--tenue);margin-left:auto}
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 2px;border-bottom:1px solid var(--linea)}
+.item input{margin-top:3px;width:17px;height:17px;accent-color:var(--senal);flex:none;cursor:pointer}
+.item label{flex:1;cursor:pointer;line-height:1.35}
+.item .nom{font-weight:600;font-size:15px}
+.item .med{font-family:var(--dato);font-size:12.5px;color:var(--esmalte);margin-left:7px}
+.item .en{font-family:var(--dato);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tenue);display:block;margin-top:2px}
+.item.listo .nom,.item.listo .med{text-decoration:line-through;opacity:.42}
+.kit{margin-top:8px;columns:2;column-gap:22px}
+@media(max-width:560px){.kit{columns:1}}
+.kit .item{break-inside:avoid}
+.vacio{text-align:center;padding:56px 20px;color:var(--tenue)}
+.vacio p{font-size:15px;max-width:400px;margin:10px auto 0;line-height:1.5}
+.vacio strong{font-family:var(--display);text-transform:uppercase;font-size:24px;color:var(--petroleo);display:block}
+.pie{margin-top:44px;padding-top:18px;border-top:1px solid var(--linea);font-size:12.5px;color:var(--tenue);line-height:1.55}
+.aviso-flotante{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--petroleo);color:#F4F6F1;padding:11px 20px;border-radius:6px;font-family:var(--dato);font-size:12px;letter-spacing:.06em;text-transform:uppercase;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
+.aviso-flotante.ver{opacity:1}
+:focus-visible{outline:2.5px solid var(--mostaza);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none !important}}
+
+.merc-intro{margin:22px 0 0;font-size:14.5px;color:var(--tenue);max-width:640px;line-height:1.5}
+.merc-tog{display:flex;align-items:center;gap:9px;margin:14px 0 0;font-size:14px;font-weight:600;color:var(--petroleo);cursor:pointer}
+.merc-tog input{width:17px;height:17px;accent-color:var(--senal);cursor:pointer}
+.merc-rubro{font-family:var(--display);text-transform:uppercase;font-size:15px;letter-spacing:.1em;color:var(--tenue);margin:22px 0 8px;font-weight:600}
+.ing-grid{display:flex;flex-wrap:wrap;gap:6px}
+.ing-chip{font-size:13px;font-weight:600;padding:5px 11px;border-radius:20px;border:1.5px solid var(--linea);background:transparent;color:var(--esmalte);cursor:pointer;transition:all .12s}
+.ing-chip:hover{border-color:var(--esmalte)}
+.ing-chip[aria-pressed="true"]{background:var(--senal);border-color:var(--senal);color:#F4F6F1}
+.res{background:var(--superficie);border:1.5px solid var(--linea);border-radius:9px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:9px}
+.res.full{border-color:var(--senal);border-left-width:5px}
+.res .info{flex:1;min-width:200px}
+.res h4{font-family:var(--display);text-transform:uppercase;font-size:19px;margin:0;color:var(--petroleo);font-weight:700;line-height:1.1}
+.res .meta{font-family:var(--dato);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tenue);margin-top:3px}
+.res .falta{font-size:13px;color:#8A5A10;margin-top:5px;line-height:1.4}
+.res .falta b{color:#7A4A08}
+.res .cambio{font-size:12.5px;color:var(--tenue);margin-top:3px;line-height:1.4}
+.compra-u{display:block;font-family:var(--dato);font-size:11px;letter-spacing:.04em;color:#7A5709;background:rgba(217,164,38,.16);border-radius:3px;padding:1px 6px;margin-top:4px;width:fit-content}
+@media print{nav.rutas,.acciones,.filtros,.placa{display:none}body{background:#fff}.tablero-viaje{background:#fff;color:#000;border:1.5px solid #000}.lecturas b,.tablero-viaje h2{color:#000}}
+</style>
+</head>
+<body>
+
+<header class="chapa">
+  <div class="chapa-in">
+    <div class="marca">
+      <div class="escudo"><b>RS</b><span>KM 0</span></div>
+      <div>
+        <h1>Cocina de Ruta</h1>
+        <div class="bajada">Ruta Sur · Pescetariano · Alto en proteína</div>
+      </div>
+    </div>
+    <div class="placa">
+      Base: <b>2 porciones</b> · Hornalla + airfryer + tuppers de vidrio<br>
+      80 opciones · elegí y se arma la lista sola
+    </div>
+  </div>
+</header>
+
+<nav class="rutas"><div class="rutas-in" role="tablist" id="nav"></div></nav>
+
+<div class="wrap">
+  <div id="panelRecetas">
+    <div class="filtros" id="filtros">
+      <span class="rot">Filtros</span>
+      <button class="chip" data-f="sinfrio" aria-pressed="false">Sin heladera</button>
+      <button class="chip" data-f="sinagua" aria-pressed="false">Sin gastar agua</button>
+      <button class="chip" data-f="sinfuego" aria-pressed="false">Sin cocción</button>
+      <button class="chip" data-f="rinde" aria-pressed="false">Rinde para varias comidas</button>
+      <button class="chip" data-f="rapido" aria-pressed="false">15 min o menos</button>
+      <button class="chip" data-f="airfryer" aria-pressed="false">Airfryer</button>
+    </div>
+    <div class="grilla" id="grilla"></div>
+  </div>
+
+
+  <div id="panelMercado" class="oculto">
+    <p class="merc-intro">Tildá lo que conseguiste en el mercado o lo que ya tenés en la camioneta. Abajo aparecen los platos que salen completos y los que quedan a uno o dos ingredientes.</p>
+    <label class="merc-tog"><input type="checkbox" id="asumeBase" checked> Doy por hecho que llevo la despensa base (aceite, especias, arroz, avena, harina, latas de reserva)</label>
+    <div id="ingSelector"></div>
+    <h2 class="bloque-tit">Qué sale con eso</h2>
+    <div id="resultados"></div>
+  </div>
+
+  <div id="panelLista" class="oculto">
+    <div class="tablero-viaje">
+      <h2>Tablero del viaje</h2>
+      <div class="aguja" id="aguja"></div>
+      <div class="lecturas">
+        <div>Días completos<b id="lDias">0</b></div>
+        <div>Comidas cubiertas<b id="lComidas">0</b></div>
+        <div>Kcal por día<b id="lKcal">—</b></div>
+        <div>Proteína por día<b id="lProt">—</b></div>
+      </div>
+      <div class="aviso" id="aviso"></div>
+    </div>
+    <div class="acciones">
+      <button id="btnCompartir">Compartir</button>
+      <button id="btnCopiar">Copiar la lista</button>
+      <button id="btnImprimir">Imprimir</button>
+      <button id="btnVaciar" class="peligro">Vaciar todo</button>
+    </div>
+    <div id="lista"></div>
+    <h2 class="bloque-tit">Despensa base</h2>
+    <p class="bloque-sub">Lo que vive en la caja seca todo el viaje. No se compra por tramo: se revisa y se repone cuando baja. Tildá lo que ya tenés a bordo.</p>
+    <div class="kit" id="kit"></div>
+  </div>
+
+  <div class="pie">
+    Calorías y macros son estimaciones por porción sobre ingredientes estándar; cambian según marca, corte y cuánto aceite entre en la olla. Sirven para orientarse, no como medición exacta.
+  </div>
+</div>
+
+<div class="aviso-flotante" id="toast"></div>
+
+<script>
+/* ===== Catálogo: c=rubro, f=frío, b=despensa base ===== */
+const CAT = {
+  "Huevos":{c:"Lácteos y huevos"},"Yogur griego natural":{c:"Lácteos y huevos",f:1},
+  "Queso port salut":{c:"Lácteos y huevos",f:1},"Queso untable descremado":{c:"Lácteos y huevos",f:1},
+  "Queso rallado":{c:"Lácteos y huevos",f:1},"Queso feta":{c:"Lácteos y huevos",f:1},
+  "Ricota descremada":{c:"Lácteos y huevos",f:1},"Queso cottage":{c:"Lácteos y huevos",f:1},
+  "Leche descremada":{c:"Lácteos y huevos",f:1},"Queso muzzarella":{c:"Lácteos y huevos",f:1},
+  "Queso fresco":{c:"Lácteos y huevos",f:1},
+
+  "Filete de merluza":{c:"Pescadería y congelados",f:1},"Salmón fresco":{c:"Pescadería y congelados",f:1},
+  "Camarones":{c:"Pescadería y congelados",f:1},"Filete de pescado blanco":{c:"Pescadería y congelados",f:1},
+
+  "Tomate":{c:"Verdulería"},"Palta":{c:"Verdulería"},"Cebolla":{c:"Verdulería"},
+  "Cebolla morada":{c:"Verdulería"},"Cebolla de verdeo":{c:"Verdulería"},"Morrón":{c:"Verdulería"},
+  "Ajo":{c:"Verdulería",b:1},"Limón":{c:"Verdulería"},"Lima":{c:"Verdulería"},"Jengibre":{c:"Verdulería"},
+  "Brócoli":{c:"Verdulería"},"Zanahoria":{c:"Verdulería"},"Espinaca":{c:"Verdulería",f:1},
+  "Zucchini":{c:"Verdulería"},"Zapallitos":{c:"Verdulería"},"Berenjena":{c:"Verdulería"},
+  "Papa":{c:"Verdulería"},"Batata":{c:"Verdulería"},"Zapallo":{c:"Verdulería"},"Apio":{c:"Verdulería"},
+  "Repollo":{c:"Verdulería"},"Pepino":{c:"Verdulería"},"Mix de hojas verdes":{c:"Verdulería",f:1},
+  "Rúcula":{c:"Verdulería",f:1},"Lechuga":{c:"Verdulería",f:1},"Cilantro":{c:"Verdulería",f:1},
+  "Banana":{c:"Verdulería"},"Manzana":{c:"Verdulería"},"Frutillas":{c:"Verdulería",f:1},"Perejil":{c:"Verdulería"},
+
+  "Atún al agua":{c:"Almacén"},"Sardinas en aceite":{c:"Almacén"},"Garbanzos en lata":{c:"Almacén"},
+  "Lentejas en lata":{c:"Almacén"},"Porotos negros en lata":{c:"Almacén"},"Tomate triturado":{c:"Almacén"},
+  "Choclo en lata":{c:"Almacén"},"Aceitunas":{c:"Almacén"},"Leche de coco":{c:"Almacén"},
+  "Arroz":{c:"Almacén",b:1},"Fideos integrales":{c:"Almacén",b:1},"Fideos de arroz":{c:"Almacén"},
+  "Quinoa":{c:"Almacén"},"Avena":{c:"Almacén",b:1},"Proteína en polvo":{c:"Almacén",b:1},
+  "Mantequilla de maní":{c:"Almacén",b:1},"Nueces":{c:"Almacén",b:1},"Almendras":{c:"Almacén",b:1},
+  "Semillas de chía":{c:"Almacén"},"Galletas de arroz":{c:"Almacén"},"Miel":{c:"Almacén",b:1},
+  "Pan rallado":{c:"Almacén"},"Caldo de verduras en cubo":{c:"Almacén",b:1},"Polvo de hornear":{c:"Almacén",b:1},
+  "Café":{c:"Almacén",b:1},"Yerba mate":{c:"Almacén",b:1},"Harina integral":{c:"Almacén",b:1},
+  "Harina de maíz":{c:"Almacén"},"Almidón de mandioca":{c:"Almacén"},"Coco rallado":{c:"Almacén"},
+
+  "Pan integral":{c:"Panadería"},"Tortillas de trigo integral":{c:"Panadería"},"Tortillas de maíz":{c:"Panadería"},
+
+  "Aceite de oliva":{c:"Condimentos y básicos",b:1},"Sal":{c:"Condimentos y básicos",b:1},
+  "Pimienta":{c:"Condimentos y básicos",b:1},"Orégano":{c:"Condimentos y básicos",b:1},
+  "Comino":{c:"Condimentos y básicos",b:1},"Curry en polvo":{c:"Condimentos y básicos",b:1},
+  "Pimentón":{c:"Condimentos y básicos",b:1},"Canela":{c:"Condimentos y básicos",b:1},
+  "Salsa de soja":{c:"Condimentos y básicos",b:1},"Mostaza":{c:"Condimentos y básicos",b:1},
+  "Romero":{c:"Condimentos y básicos",b:1},"Vinagre":{c:"Condimentos y básicos",b:1}
+};
+const ORDEN_RUBROS = ["Pescadería y congelados","Lácteos y huevos","Verdulería","Almacén","Panadería","Condimentos y básicos"];
+
+
+/* ===== Cómo se compra de verdad =====
+   pack: N unidades de receta = 1 envase · kg: se pesa · unid: se cuenta */
+const COMPRA = {
+  "Huevos":{t:"pack",paso:12,s:"docena",p:"docenas"},
+  "Espinaca":{t:"pack",paso:250,s:"atado",p:"atados"},
+  "Rúcula":{t:"pack",paso:150,s:"atado",p:"atados"},
+  "Lechuga":{t:"pack",paso:300,s:"planta",p:"plantas"},
+  "Repollo":{t:"pack",paso:800,s:"repollo",p:"repollos"},
+  "Brócoli":{t:"pack",paso:350,s:"planta",p:"plantas"},
+  "Mix de hojas verdes":{t:"pack",paso:150,s:"bolsa",p:"bolsas"},
+  "Cilantro":{t:"pack",paso:1,s:"atado",p:"atados"},
+  "Perejil":{t:"pack",paso:2,s:"atado",p:"atados"},
+  "Ajo":{t:"pack",paso:10,s:"cabeza",p:"cabezas"},
+  "Tomate":{t:"kg",porU:0.15},"Cebolla":{t:"kg",porU:0.16},"Cebolla morada":{t:"kg",porU:0.16},
+  "Papa":{t:"kg"},"Batata":{t:"kg"},"Zapallo":{t:"kg",porU:1.2},"Zanahoria":{t:"kg",porU:0.09},
+  "Morrón":{t:"kg",porU:0.18},"Berenjena":{t:"kg",porU:0.3},"Zapallitos":{t:"kg"},"Zucchini":{t:"kg",porU:0.25},
+  "Manzana":{t:"kg",porU:0.18},"Banana":{t:"kg",porU:0.12},"Frutillas":{t:"pack",paso:400,s:"caja",p:"cajas"},
+  "Filete de merluza":{t:"kg"},"Filete de pescado blanco":{t:"kg"},"Salmón fresco":{t:"kg"},"Camarones":{t:"kg"},
+  "Leche descremada":{t:"pack",paso:1000,s:"litro",p:"litros"},
+  "Yogur griego natural":{t:"pack",paso:200,s:"pote",p:"potes"},
+  "Leche de coco":{t:"pack",paso:400,s:"lata",p:"latas"},
+  "Choclo en lata":{t:"pack",paso:300,s:"lata",p:"latas"},
+  "Tomate triturado":{t:"pack",paso:400,s:"lata",p:"latas"},
+  "Aceitunas":{t:"pack",paso:200,s:"frasco",p:"frascos"},
+  "Galletas de arroz":{t:"pack",paso:12,s:"paquete",p:"paquetes"},
+  "Pan integral":{t:"pack",paso:20,s:"pan de molde",p:"panes de molde"},
+  "Tortillas de maíz":{t:"pack",paso:12,s:"paquete",p:"paquetes"},
+  "Tortillas de trigo integral":{t:"pack",paso:8,s:"paquete",p:"paquetes"},
+  "Arroz":{t:"pack",paso:1000,s:"kilo",p:"kilos"},
+  "Fideos integrales":{t:"pack",paso:500,s:"paquete",p:"paquetes"},
+  "Fideos de arroz":{t:"pack",paso:400,s:"paquete",p:"paquetes"},
+  "Avena":{t:"pack",paso:500,s:"paquete",p:"paquetes"},
+  "Quinoa":{t:"pack",paso:500,s:"paquete",p:"paquetes"},
+  "Harina integral":{t:"pack",paso:1000,s:"kilo",p:"kilos"},
+  "Harina de maíz":{t:"pack",paso:1000,s:"kilo",p:"kilos"},
+  "Almidón de mandioca":{t:"pack",paso:500,s:"paquete",p:"paquetes"},
+  "Coco rallado":{t:"pack",paso:100,s:"paquete",p:"paquetes"},
+  "Semillas de chía":{t:"pack",paso:200,s:"paquete",p:"paquetes"},
+  "Proteína en polvo":{t:"pack",paso:900,s:"pote",p:"potes"},
+  "Mantequilla de maní":{t:"pack",paso:350,s:"pote",p:"potes"},
+  "Nueces":{t:"pack",paso:200,s:"bolsa",p:"bolsas"},
+  "Almendras":{t:"pack",paso:200,s:"bolsa",p:"bolsas"},
+  "Pan rallado":{t:"pack",paso:500,s:"paquete",p:"paquetes"},
+  "Aceite de oliva":{t:"ml",porU:15,paso:500,s:"botella",p:"botellas"},
+  "Miel":{t:"pack",paso:20,s:"frasco",p:"frascos"}
+};
+
+const KIT = [
+ ["Aceite de oliva","1 botella"],["Sal fina y gruesa","—"],["Pimienta","—"],["Orégano","—"],
+ ["Comino","—"],["Pimentón","—"],["Curry en polvo","—"],["Canela","—"],["Ajo","1 cabeza"],
+ ["Salsa de soja","1 botella chica"],["Vinagre","1 botella chica"],["Mostaza","1 pote"],["Miel","1 pote"],
+ ["Caldo de verduras en cubo","1 caja"],["Polvo de hornear","1 sobre"],
+ ["Arroz","1 kg"],["Fideos integrales","500 g"],["Avena","1 kg"],["Harina integral","1 kg"],
+ ["Atún al agua","4 latas de reserva"],["Garbanzos o lentejas en lata","2 latas de reserva"],
+ ["Sardinas en aceite","2 latas de reserva"],["Tomate triturado","2 latas de reserva"],
+ ["Proteína en polvo","1 pote"],["Mantequilla de maní","1 pote"],["Nueces y almendras","1 bolsa"],
+ ["Yerba mate","1 kg"],["Café","1 paquete"],
+ ["Papel de horno","para los tuppers"],["Bolsas con cierre","para sobras"]
+];
+/* ===== Recetas =====
+   rinde = porciones totales que salen de los ingredientes listados
+   agua: 0 sin agua ni lavado pesado · 1 una olla o el vaso del airfryer · 2 hervir y colar */
+const R = [
+/* ================= DESAYUNOS ================= */
+{id:"d1",t:"desayuno",n:"Revuelto cremoso con tostadas",d:"El clásico de campamento, con queso fundido adentro y pan tostado al lado.",min:10,k:420,p:28,c:28,g:22,rinde:2,agua:1,eq:["hornalla","tostadora"],
+ i:[["Huevos",5,"u"],["Queso port salut",50,"g"],["Pan integral",4,"reb"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"],["Pimienta",1,"pizca"]],
+ sust:[["Queso port salut","cualquier queso que funda: fresco, muzzarella, Oaxaca en México"]],
+ s:["Batí los huevos con sal y pimienta.","Calentá la sartén a fuego bajo con el aceite y volcá los huevos.","Revolvé constante; cuando estén casi listos sumá el queso en cubos y apagá.","Tostá el pan y serví el revuelto encima."],
+ tip:"Fuego bajo y apagar antes de que parezca listo: el calor residual termina la cocción y queda cremoso."},
+
+{id:"d2",t:"desayuno",n:"Avena de la noche anterior",d:"Se arma antes de dormir y a la mañana está lista. Cero fuego.",min:5,k:450,p:29,c:58,g:12,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Avena",100,"g"],["Yogur griego natural",400,"g"],["Banana",2,"u"],["Nueces",20,"g"],["Canela",1,"pizca"]],
+ sust:[["Yogur griego natural","yogur natural colado toda la noche en un filtro de café"],["Nueces","maní, almendras o castañas de cajú"]],
+ s:["Mezclá la avena con el yogur en dos frascos.","Sumá canela y una banana pisada repartida entre los dos.","Tapá y dejá en la heladera toda la noche.","A la mañana agregá la otra banana en rodajas y las nueces."],
+ tip:"Armalos la noche antes de un tramo largo: desayunás en marcha sin encender nada."},
+
+{id:"d3",t:"desayuno",n:"Tostadas de palta con huevo",d:"Palta pisada con limón, huevo revuelto arriba y una capa de queso untable.",min:12,k:470,p:25,c:33,g:27,rinde:2,agua:1,eq:["hornalla","tostadora"],
+ i:[["Huevos",4,"u"],["Palta",1,"u"],["Pan integral",4,"reb"],["Queso untable descremado",60,"g"],["Limón",1,"u"],["Sal",1,"pizca"]],
+ sust:[["Queso untable descremado","ricota descremada o cottage pisado"]],
+ s:["Pisá la palta con jugo de limón y sal.","Tostá el pan y untá el queso.","Revolvé los huevos en la sartén.","Armá: queso, palta y huevo arriba."],
+ tip:"El limón evita que la palta se ponga negra; si sobra media, guardala con el carozo puesto."},
+
+{id:"d4",t:"desayuno",n:"Omelette de espinaca y queso",d:"Todo en una sartén, sin hidratos. El desayuno más liviano de la lista.",min:12,k:350,p:32,c:8,g:20,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",6,"u"],["Espinaca",150,"g"],["Queso port salut",50,"g"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"],["Pimienta",1,"pizca"]],
+ sust:[["Espinaca","acelga, kale o berro; en Perú y Bolivia la acelga se consigue en todos lados"]],
+ s:["Salteá la espinaca hasta que reduzca y reservá.","Batí los huevos con sal y pimienta.","Volcá en la sartén y cociná a fuego medio-bajo hasta que cuaje la base.","Sumá espinaca y queso en la mitad, doblá y cociná un minuto más."],
+ tip:"Si sobra omelette, va frío dentro de un wrap al mediodía."},
+
+{id:"d5",t:"desayuno",n:"Bowl de yogur con frutas y semillas",d:"Sin fuego y en dos minutos. Ideal para arrancar temprano y salir.",min:5,k:330,p:26,c:34,g:10,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Yogur griego natural",400,"g"],["Frutillas",200,"g"],["Semillas de chía",20,"g"],["Almendras",20,"g"],["Miel",1,"cda"]],
+ sust:[["Frutillas","la fruta de estación del lugar: mango, papaya, durazno, banana"],["Semillas de chía","lino molido o avena"]],
+ s:["Repartí el yogur en dos bowls.","Sumá las frutillas cortadas.","Espolvoreá chía y almendras picadas.","Terminá con un hilo de miel."],
+ tip:"Donde no haya griego, colá yogur natural en un filtro de café toda la noche: queda espeso y con más proteína por cucharada."},
+
+{id:"d6",t:"desayuno",n:"Panqueques de avena y huevo",d:"Masa de avena, huevo y yogur. Salen unos ocho chicos.",min:18,k:400,p:30,c:40,g:13,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Avena",80,"g"],["Huevos",4,"u"],["Yogur griego natural",150,"g"],["Banana",1,"u"],["Polvo de hornear",1,"cdita"],["Aceite de oliva",1,"cdita"]],
+ sust:[["Avena","harina integral en la misma cantidad"]],
+ s:["Pisá la banana y mezclala con los huevos y el yogur.","Sumá la avena y el polvo de hornear; dejá reposar cinco minutos.","Cociná cucharadas en sartén apenas aceitada, a fuego medio.","Dalos vuelta cuando aparezcan burbujas arriba."],
+ tip:"Si tenés minipimer, procesá la avena antes: la masa queda más lisa."},
+
+{id:"d7",t:"desayuno",n:"Tortilla de atún y tomate",d:"Desayuno salado y contundente, con la proteína más alta del grupo.",min:15,k:330,p:38,c:12,g:14,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",4,"u"],["Atún al agua",1,"lata"],["Tomate",2,"u"],["Cebolla de verdeo",1,"u"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Cebolla de verdeo","cebolla común picada fina o cebollín"]],
+ s:["Escurrí bien el atún y picá el tomate y el verdeo.","Batí los huevos con sal y mezclá todo.","Volcá en la sartén y tapá, fuego bajo, unos seis minutos.","Dala vuelta con un plato y cociná dos minutos más."],
+ tip:"Tapada y a fuego bajo se cocina de arriba sola; si no querés darla vuelta, dejala tapada un par de minutos más."},
+
+{id:"d8",t:"desayuno",n:"Tostado de queso con huevo duro",d:"Tostadora y una ollita. Los huevos se pueden hervir la noche anterior.",min:12,k:420,p:30,c:34,g:18,rinde:2,agua:2,eq:["hornalla","tostadora"],
+ i:[["Pan integral",4,"reb"],["Queso port salut",80,"g"],["Tomate",1,"u"],["Huevos",4,"u"],["Orégano",1,"pizca"]],
+ sust:[["Pan integral","tortillas de trigo o arepas donde no haya panadería"]],
+ s:["Herví los huevos diez minutos y pelalos.","Armá los tostados con queso y rodajas de tomate.","Pasalos por la tostadora hasta que el queso se funda.","Serví con los huevos cortados al medio, sal y orégano."],
+ tip:"Herví seis de una y guardá los que sobren con cáscara: aguantan días fríos y salvan cualquier merienda."},
+
+{id:"d9",t:"desayuno",n:"Licuado de avena y maní",d:"Todo a la botella. Se toma en la ruta sin platos que lavar.",min:5,k:400,p:33,c:40,g:13,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Proteína en polvo",60,"g"],["Avena",60,"g"],["Mantequilla de maní",20,"g"],["Banana",1,"u"],["Leche descremada",500,"ml"]],
+ sust:[["Leche descremada","leche en polvo reconstituida: pesa nada y no necesita frío"]],
+ s:["Poné la leche primero en la botella.","Sumá la proteína, la avena y el maní.","Agregá la banana en rodajas.","Licuá o agitá fuerte treinta segundos."],
+ tip:"Sin licuadora, dejá la avena en remojo diez minutos: se ablanda y no queda arenosa al agitar."},
+
+{id:"d10",t:"desayuno",n:"Huevos rancheros de ruta",d:"Porotos calientes, tortilla y huevo. El desayuno del tramo mexicano.",min:15,k:450,p:26,c:40,g:22,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",4,"u"],["Porotos negros en lata",1,"lata"],["Tortillas de maíz",4,"u"],["Tomate",2,"u"],["Queso rallado",40,"g"],["Comino",1,"cdita"],["Aceite de oliva",1,"cdita"]],
+ sust:[["Porotos negros en lata","frijoles refritos de lata, o porotos rojos"]],
+ s:["Calentá los porotos escurridos con comino y sal.","Picá el tomate crudo con sal para una salsa rápida.","Fritá los huevos y calentá las tortillas en la misma sartén.","Armá: tortilla, porotos, huevo, salsa y queso."],
+ tip:"Los porotos en lata son la proteína seca más barata de Centroamérica y no ocupan lugar en la heladera."},
+
+{id:"d11",t:"desayuno",n:"Shakshuka de una sartén",d:"Huevos escalfados en salsa de tomate especiada. Se come directo de la sartén.",min:20,k:390,p:26,c:26,g:20,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",5,"u"],["Tomate triturado",400,"g"],["Morrón",1,"u"],["Cebolla",1,"u"],["Queso feta",60,"g"],["Comino",1,"cdita"],["Pimentón",1,"cdita"],["Aceite de oliva",1,"cda"],["Pan integral",2,"reb"]],
+ sust:[["Queso feta","queso fresco desmenuzado o ricota salada"],["Tomate triturado","4 tomates frescos picados y cocinados diez minutos más"]],
+ s:["Rehogá cebolla y morrón picados hasta que estén tiernos.","Sumá comino, pimentón y el tomate triturado; cociná diez minutos.","Hacé huecos en la salsa y rompé los huevos adentro.","Tapá cinco minutos, sumá el feta desmenuzado y serví con pan."],
+ tip:"Se come de la misma sartén con el pan: dos personas, un solo elemento para lavar."},
+
+{id:"d12",t:"desayuno",n:"Muffins de huevo y verdura",d:"Seis muffins en tuppers de vidrio al airfryer. Cubre tres desayunos.",min:25,k:280,p:24,c:8,g:17,rinde:6,agua:1,eq:["airfryer"],
+ i:[["Huevos",9,"u"],["Espinaca",150,"g"],["Morrón",1,"u"],["Queso rallado",80,"g"],["Cebolla de verdeo",2,"u"],["Sal",1,"cdita"],["Pimienta",1,"pizca"]],
+ sust:[["Espinaca","acelga picada fina, brócoli o zucchini rallado"]],
+ s:["Picá fino toda la verdura y mezclala con los huevos batidos, el queso y la sal.","Aceitá apenas los tuppers de vidrio y repartí la mezcla sin llenarlos del todo.","Airfryer a 165 °C, dieciocho minutos, hasta que estén firmes al tacto.","Dejá enfriar y guardá en la heladera: se comen fríos o recalentados."],
+ tip:"Es el mejor uso de los tuppers de vidrio: cocinás tres desayunos en una sola tanda y arrancás la mañana sin encender nada."},
+
+{id:"d13",t:"desayuno",n:"Tostadas francesas proteicas",d:"Pan mojado en huevo, leche y canela. Dulce sin azúcar agregada.",min:12,k:410,p:28,c:42,g:14,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Pan integral",6,"reb"],["Huevos",4,"u"],["Leche descremada",150,"ml"],["Canela",1,"cdita"],["Miel",1,"cdita"],["Aceite de oliva",1,"cdita"],["Banana",1,"u"]],
+ sust:[["Pan integral","cualquier pan del día anterior: cuanto más seco, mejor absorbe"]],
+ s:["Batí huevos con leche y canela en un bowl playo.","Remojá cada rebanada treinta segundos por lado.","Dorá en sartén apenas aceitada, dos minutos por lado.","Serví con banana en rodajas y un hilo de miel."],
+ tip:"El pan medio duro del día anterior funciona mejor que el fresco: absorbe sin deshacerse."},
+
+{id:"d14",t:"desayuno",n:"Huevos al plato con espinaca",d:"Directo en el tupper de vidrio al airfryer. Cero sartén, cero revolver.",min:18,k:360,p:30,c:10,g:23,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Huevos",5,"u"],["Espinaca",150,"g"],["Queso port salut",60,"g"],["Tomate",1,"u"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Queso port salut","cualquier queso que funda"]],
+ s:["Poné la espinaca cruda y el tomate picado en el fondo del tupper.","Rompé los huevos encima y salá.","Sumá el queso en trozos y un hilo de aceite.","Airfryer a 170 °C, doce minutos, hasta que la clara esté firme."],
+ tip:"Sacalo cuando la yema todavía se mueva un poco: sigue cocinándose en el vidrio caliente."},
+
+{id:"d15",t:"desayuno",n:"Porridge caliente de avena y manzana",d:"Avena cocida con manzana y canela. Para las mañanas frías de altura.",min:12,k:390,p:24,c:55,g:9,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Avena",100,"g"],["Leche descremada",400,"ml"],["Manzana",1,"u"],["Proteína en polvo",30,"g"],["Canela",1,"cdita"],["Nueces",15,"g"]],
+ sust:[["Leche descremada","agua más leche en polvo, o mitad y mitad"],["Proteína en polvo","dos claras batidas incorporadas al final, fuera del fuego"]],
+ s:["Calentá la leche con la manzana rallada y la canela.","Sumá la avena y cociná cinco minutos revolviendo.","Sacá del fuego y recién ahí incorporá la proteína.","Serví con nueces picadas arriba."],
+ tip:"La proteína va siempre fuera del fuego: si hierve se corta y queda con grumos."},
+
+{id:"d16",t:"desayuno",n:"Arepas rellenas de huevo y queso",d:"El desayuno colombiano y venezolano. Cuatro arepas, cubre dos mañanas.",min:25,k:430,p:26,c:44,g:17,rinde:4,agua:1,eq:["hornalla"],
+ i:[["Harina de maíz",250,"g"],["Huevos",4,"u"],["Queso fresco",150,"g"],["Sal",1,"cdita"],["Aceite de oliva",1,"cda"]],
+ sust:[["Harina de maíz","harina precocida tipo P.A.N., que se consigue en toda la región andina"],["Queso fresco","queso llanero, campesino, o port salut"]],
+ s:["Mezclá la harina con sal y agua tibia hasta formar una masa que no se pegue.","Armá cuatro discos de un centímetro y cocinalos en sartén seca, cinco minutos por lado.","Revolvé los huevos con un poco de queso.","Abrí las arepas al medio y rellenalas con huevo y queso fresco."],
+ tip:"La masa se hace con agua tibia y se deja reposar cinco minutos: si se agrieta al armar los discos, le falta agua."},
+
+{id:"d17",t:"desayuno",n:"Yogur con granola de avena tostada",d:"La granola se tuesta en tanda al airfryer y dura dos semanas en frasco.",min:20,k:420,p:27,c:44,g:15,rinde:2,agua:0,eq:["airfryer"],
+ i:[["Avena",120,"g"],["Almendras",40,"g"],["Coco rallado",20,"g"],["Miel",2,"cda"],["Aceite de oliva",1,"cda"],["Yogur griego natural",400,"g"],["Canela",1,"cdita"]],
+ sust:[["Coco rallado","más almendras o maní picado"],["Miel","panela rallada o azúcar mascabo"]],
+ s:["Mezclá avena, almendras picadas, coco, canela, miel y aceite.","Extendé en el tupper y airfryer a 160 °C, ocho minutos, revolviendo a la mitad.","Dejá enfriar del todo: recién ahí queda crocante.","Serví sobre el yogur."],
+ tip:"Hacé el triple de granola de una: es el mejor topping de meriendas y aguanta semanas en frasco cerrado."},
+
+{id:"d18",t:"desayuno",n:"Panqueques salados de espinaca y queso",d:"Cuatro panqueques rellenos que rinden dos desayunos. Se comen fríos también.",min:25,k:370,p:28,c:30,g:16,rinde:4,agua:1,eq:["hornalla"],
+ i:[["Harina integral",120,"g"],["Huevos",4,"u"],["Leche descremada",300,"ml"],["Espinaca",200,"g"],["Ricota descremada",200,"g"],["Queso rallado",40,"g"],["Aceite de oliva",1,"cdita"],["Sal",1,"cdita"]],
+ sust:[["Ricota descremada","cottage pisado o queso untable"]],
+ s:["Batí harina, huevos, leche y sal hasta que no queden grumos; dejá reposar diez minutos.","Cociná panqueques finos en sartén apenas aceitada.","Salteá la espinaca y mezclala con la ricota y el queso rallado.","Rellená, enrollá y serví; los que sobren van a la heladera."],
+ tip:"Los rellenos aguantan dos días fríos y se comen sin recalentar: son el desayuno de la mañana apurada."},
+
+{id:"d19",t:"desayuno",n:"Quesadilla de huevo y palta",d:"Tortilla doblada con huevo, queso y palta. Ocho minutos y un solo plato.",min:10,k:440,p:26,c:34,g:24,rinde:2,agua:0,eq:["hornalla"],
+ i:[["Tortillas de trigo integral",2,"u"],["Huevos",4,"u"],["Queso muzzarella",60,"g"],["Palta",1,"u"],["Cilantro",1,"puñado"],["Sal",1,"pizca"]],
+ sust:[["Queso muzzarella","Oaxaca, mozzarella o cualquier queso que hile"],["Cilantro","perejil, o nada si a Lula no le gusta"]],
+ s:["Revolvé los huevos con sal y reservá.","Poné la tortilla en la sartén seca, cubrí media con queso y huevo.","Doblá al medio y cociná dos minutos por lado.","Abrí, sumá palta en láminas y cilantro."],
+ tip:"La palta va después de cocinar, nunca antes: si la calentás se pone amarga."},
+
+{id:"d20",t:"desayuno",n:"Licuado verde con proteína",d:"Espinaca, banana y proteína. Verde, liviano y se toma manejando.",min:5,k:340,p:32,c:38,g:6,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Espinaca",100,"g"],["Banana",2,"u"],["Proteína en polvo",60,"g"],["Leche descremada",400,"ml"],["Semillas de chía",15,"g"]],
+ sust:[["Espinaca","no se siente el gusto: cualquier hoja verde sirve"]],
+ s:["Poné la leche y la espinaca primero y licuá.","Sumá banana, proteína y chía.","Licuá otros treinta segundos.","Serví en dos botellas."],
+ tip:"Si no hay licuadora, salteá la espinaca: sin procesar queda fibrosa y no se toma bien."},
+/* ================= ALMUERZOS ================= */
+{id:"a1",t:"almuerzo",n:"Ensalada de atún y garbanzos",d:"Sin fuego, sin heladera y aguanta armada varias horas.",min:10,k:480,p:38,c:40,g:18,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Atún al agua",2,"lata"],["Garbanzos en lata",1,"lata"],["Tomate",2,"u"],["Cebolla morada",1,"u"],["Morrón",1,"u"],["Aceite de oliva",2,"cda"],["Limón",1,"u"],["Perejil",1,"puñado"],["Sal",1,"pizca"]],
+ sust:[["Garbanzos en lata","porotos blancos, alubias o lentejas de lata"]],
+ s:["Enjuagá y escurrí los garbanzos.","Cortá tomate, morrón y cebolla en cubos chicos.","Mezclá todo con el atún escurrido.","Aliñá con aceite, limón, sal y perejil picado."],
+ tip:"Es el almuerzo de emergencia: todo vive en la caja seca, así que conviene tener siempre el juego completo de repuesto."},
+
+{id:"a2",t:"almuerzo",n:"Wok de camarones con arroz",d:"Un wok, fuego fuerte y siete minutos. Verduras crocantes.",min:20,k:520,p:40,c:60,g:12,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Camarones",300,"g"],["Arroz",150,"g"],["Brócoli",200,"g"],["Zanahoria",1,"u"],["Salsa de soja",2,"cda"],["Ajo",2,"diente"],["Jengibre",1,"cdita"],["Aceite de oliva",1,"cda"]],
+ sust:[["Camarones","pescado blanco en cubos, o langostinos congelados"],["Brócoli","repollo, chauchas o lo que haya en la feria"]],
+ s:["Herví el arroz y escurrilo.","Con el wok bien caliente, salteá ajo y jengibre treinta segundos.","Sumá brócoli y zanahoria en juliana, dos minutos.","Agregá camarones y soja, tres minutos, y mezclá con el arroz."],
+ tip:"Herví arroz de más a la noche: al día siguiente saltea mucho mejor que el recién hecho."},
+
+{id:"a3",t:"almuerzo",n:"Wrap de atún y palta",d:"Se arma en cinco minutos y se come sin plato ni cubiertos.",min:8,k:470,p:34,c:38,g:20,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Tortillas de trigo integral",4,"u"],["Atún al agua",2,"lata"],["Palta",1,"u"],["Lechuga",100,"g"],["Tomate",1,"u"],["Yogur griego natural",2,"cda"],["Limón",1,"u"]],
+ sust:[["Lechuga","repollo en juliana: aguanta muchísimo más sin heladera"]],
+ s:["Mezclá el atún escurrido con el yogur y jugo de limón.","Pisá la palta con sal.","Untá las tortillas con palta y repartí el atún.","Sumá lechuga y tomate, enrollá y envolvé en papel."],
+ tip:"El yogur griego reemplaza a la mayonesa sin perder cremosidad y suma proteína en vez de grasa."},
+
+{id:"a4",t:"almuerzo",n:"Ensalada tibia de lentejas y huevo",d:"Lentejas de lata, huevo duro y queso. Rinde y llena.",min:15,k:460,p:32,c:50,g:14,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Lentejas en lata",1,"lata"],["Huevos",4,"u"],["Queso port salut",60,"g"],["Tomate",2,"u"],["Cebolla morada",1,"u"],["Aceite de oliva",1,"cda"],["Comino",1,"cdita"],["Vinagre",1,"cda"]],
+ sust:[["Lentejas en lata","porotos negros o garbanzos"]],
+ s:["Herví los huevos diez minutos.","Enjuagá las lentejas y calentalas apenas con comino.","Cortá tomate, cebolla y queso en cubos.","Mezclá todo, aliñá con aceite y vinagre, y sumá los huevos en cuartos."],
+ tip:"Tibia, no caliente: si las lentejas queman, el queso se derrite y se hace una pasta."},
+
+{id:"a5",t:"almuerzo",n:"Merluza crocante al airfryer",d:"Rebozado liviano, doce minutos de airfryer y ensalada al lado.",min:20,k:420,p:45,c:20,g:16,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Filete de merluza",400,"g"],["Pan rallado",40,"g"],["Huevos",1,"u"],["Limón",1,"u"],["Mix de hojas verdes",150,"g"],["Tomate",2,"u"],["Aceite de oliva",1,"cda"],["Sal",1,"pizca"]],
+ sust:[["Filete de merluza","corvina, tilapia, basa o el pescado blanco local"],["Pan rallado","avena procesada o harina de maíz"]],
+ s:["Secá bien los filetes con papel y salalos.","Pasalos por huevo batido y después por pan rallado.","Airfryer a 200 °C, doce minutos, dándolos vuelta a la mitad.","Serví con la ensalada aliñada y limón."],
+ tip:"Secar el pescado antes de rebozar es la diferencia entre crocante y empanado blando."},
+
+{id:"a6",t:"almuerzo",n:"Bowl de quinoa, atún y palta",d:"Se cocina una sola cosa y el resto se arma en frío.",min:20,k:520,p:36,c:48,g:20,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Quinoa",140,"g"],["Atún al agua",2,"lata"],["Palta",1,"u"],["Choclo en lata",100,"g"],["Tomate",1,"u"],["Limón",1,"u"],["Aceite de oliva",1,"cda"],["Sal",1,"pizca"]],
+ sust:[["Quinoa","en Perú y Bolivia es más barata que el arroz; si no hay, cuscús o arroz"]],
+ s:["Enjuagá la quinoa y hervila quince minutos; escurrí.","Dejala entibiar mientras cortás tomate y palta.","Armá los bowls con quinoa de base.","Sumá atún, choclo, verduras y aliñá con limón, aceite y sal."],
+ tip:"Enjuagar la quinoa no es opcional: sin eso queda con un amargor que no se va con nada."},
+
+{id:"a7",t:"almuerzo",n:"Tacos de pescado al airfryer",d:"Pescado especiado, repollo crocante y salsa de yogur con lima.",min:25,k:500,p:38,c:48,g:18,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Filete de pescado blanco",350,"g"],["Tortillas de maíz",6,"u"],["Repollo",200,"g"],["Yogur griego natural",100,"g"],["Lima",1,"u"],["Comino",1,"cdita"],["Pimentón",1,"cdita"],["Aceite de oliva",1,"cda"]],
+ sust:[["Lima","limón; en Centroamérica el limón local ya es lima"]],
+ s:["Condimentá el pescado con comino, pimentón, sal y un hilo de aceite.","Airfryer a 200 °C, diez minutos, y desmenuzalo con un tenedor.","Cortá el repollo bien fino y mezclalo con yogur y jugo de lima.","Calentá las tortillas y armá los tacos."],
+ tip:"El repollo es la hoja verde que más aguanta sin heladera: una cabeza entera dura toda la semana."},
+
+{id:"a8",t:"almuerzo",n:"Fideos con atún en una olla",d:"Los fideos se cocinan en la misma salsa. Se lava una sola olla.",min:20,k:540,p:36,c:70,g:14,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Fideos integrales",160,"g"],["Atún al agua",2,"lata"],["Tomate triturado",400,"g"],["Ajo",2,"diente"],["Aceitunas",30,"g"],["Aceite de oliva",1,"cda"],["Orégano",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Tomate triturado","puré de tomate o cuatro tomates frescos rallados"]],
+ s:["Dorá el ajo picado en la olla con el aceite.","Sumá el tomate, orégano, sal y medio vaso de agua.","Cuando rompa el hervor tirá los fideos secos y revolvé seguido.","Cuando estén al dente, sumá atún y aceitunas y apagá."],
+ tip:"No se cuela nada, así que gastás la mitad de agua que con fideos hervidos aparte."},
+
+{id:"a9",t:"almuerzo",n:"Ensalada griega con huevo",d:"Feta, aceitunas y huevo duro. Fresca y sin encender casi nada.",min:12,k:430,p:28,c:25,g:26,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Queso feta",120,"g"],["Huevos",4,"u"],["Pepino",1,"u"],["Tomate",3,"u"],["Cebolla morada",1,"u"],["Aceitunas",50,"g"],["Aceite de oliva",1,"cda"],["Orégano",1,"cdita"]],
+ sust:[["Queso feta","queso fresco salado, ricota salada o queso de cabra"]],
+ s:["Herví los huevos diez minutos y enfrialos.","Cortá tomate y pepino en cubos grandes y la cebolla en pluma.","Sumá aceitunas y feta en cubos.","Aliñá con aceite y orégano, y sumá los huevos en cuartos."],
+ tip:"Si los huevos vienen hervidos de la mañana, esto son cinco minutos de cuchillo y nada más."},
+
+{id:"a10",t:"almuerzo",n:"Curry de camarones y garbanzos",d:"Una olla, leche de coco y curry. Sale en veinte minutos.",min:22,k:520,p:38,c:50,g:18,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Camarones",250,"g"],["Garbanzos en lata",1,"lata"],["Leche de coco",200,"ml"],["Arroz",100,"g"],["Cebolla",1,"u"],["Espinaca",100,"g"],["Ajo",2,"diente"],["Curry en polvo",1,"cda"],["Aceite de oliva",1,"cdita"]],
+ sust:[["Leche de coco","en Centroamérica se consigue fresca y barata; si no, crema de leche"]],
+ s:["Poné el arroz a hervir aparte.","Rehogá cebolla y ajo, sumá el curry y tostalo treinta segundos.","Agregá garbanzos y leche de coco, cinco minutos a fuego bajo.","Sumá camarones y espinaca, tres minutos más, y serví sobre el arroz."],
+ tip:"Tostar el curry en el aceite antes de sumar líquido cambia el sabor por completo. No te saltees ese paso."},
+
+{id:"a11",t:"almuerzo",n:"Ensalada fría de fideos con atún",d:"Se hace de noche, se come al mediodía frío. Cuatro porciones: dos almuerzos.",min:20,k:450,p:32,c:52,g:13,rinde:4,agua:2,eq:["hornalla"],
+ i:[["Fideos integrales",250,"g"],["Atún al agua",3,"lata"],["Choclo en lata",150,"g"],["Morrón",1,"u"],["Tomate",2,"u"],["Cebolla morada",1,"u"],["Aceitunas",50,"g"],["Yogur griego natural",150,"g"],["Aceite de oliva",2,"cda"],["Vinagre",1,"cda"],["Orégano",1,"cdita"]],
+ sust:[["Fideos integrales","cualquier fideo corto: moñito, tirabuzón, codito"],["Yogur griego natural","dejalo afuera y aliñá solo con aceite y vinagre si no hay frío"]],
+ s:["Herví los fideos, escurrilos y pasalos por agua fría para cortar la cocción.","Picá morrón, tomate y cebolla en cubos chicos.","Mezclá todo con el atún escurrido, el choclo y las aceitunas.","Aliñá con yogur, aceite, vinagre y orégano; heladera al menos dos horas."],
+ tip:"Mejora al día siguiente. Es el mejor almuerzo para los días de manejar largo: se come frío y sin cocinar nada."},
+
+{id:"a12",t:"almuerzo",n:"Tarta de atún y espinaca",d:"En el tupper de vidrio al airfryer, sin tapa comprada. Cuatro porciones.",min:40,k:430,p:33,c:32,g:19,rinde:4,agua:1,eq:["airfryer"],
+ i:[["Harina integral",200,"g"],["Yogur griego natural",120,"g"],["Aceite de oliva",2,"cda"],["Atún al agua",3,"lata"],["Espinaca",300,"g"],["Huevos",4,"u"],["Cebolla",1,"u"],["Queso rallado",60,"g"],["Sal",1,"cdita"]],
+ sust:[["Harina integral","tapas de tarta compradas donde las consigas: ahorra veinte minutos"],["Espinaca","acelga, que se consigue en toda la ruta"]],
+ s:["Amasá harina, yogur, una cucharada de aceite y sal hasta una masa lisa; reposá diez minutos.","Estirala con una botella y forrá el tupper de vidrio aceitado.","Salteá cebolla y espinaca, mezclá con atún, huevos batidos y queso.","Volcá el relleno y airfryer a 170 °C, veinticinco minutos, hasta que esté firme."],
+ tip:"La masa de harina y yogur no necesita manteca ni levadura ni reposo largo: es la masa de ruta por excelencia."},
+
+{id:"a13",t:"almuerzo",n:"Calzones de queso y espinaca",d:"Cuatro calzones al airfryer con la misma masa de yogur. Se comen con la mano.",min:40,k:420,p:30,c:40,g:16,rinde:4,agua:1,eq:["airfryer"],
+ i:[["Harina integral",250,"g"],["Yogur griego natural",150,"g"],["Aceite de oliva",1,"cda"],["Polvo de hornear",1,"cdita"],["Espinaca",250,"g"],["Ricota descremada",250,"g"],["Queso muzzarella",100,"g"],["Ajo",1,"diente"],["Sal",1,"cdita"]],
+ sust:[["Ricota descremada","cottage escurrido o queso fresco desmenuzado"],["Queso muzzarella","cualquier queso que hile"]],
+ s:["Amasá harina, yogur, aceite, polvo de hornear y sal; dividí en cuatro bollos.","Salteá la espinaca con ajo y mezclá con la ricota y la muzzarella.","Estirá cada bollo, rellená media, doblá y cerrá el borde apretando con el tenedor.","Airfryer a 180 °C, quince minutos, dándolos vuelta a la mitad."],
+ tip:"Pinchá cada calzón con el tenedor antes de cocinar o el vapor los abre por la costura."},
+
+{id:"a14",t:"almuerzo",n:"Fajitas de berenjena",d:"Tiras de berenjena doradas con morrón y cebolla, en tortilla y con queso.",min:30,k:440,p:26,c:44,g:19,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Berenjena",2,"u"],["Morrón",2,"u"],["Cebolla morada",1,"u"],["Tortillas de trigo integral",4,"u"],["Queso fresco",120,"g"],["Yogur griego natural",100,"g"],["Comino",1,"cdita"],["Pimentón",1,"cdita"],["Aceite de oliva",1,"cda"],["Lima",1,"u"]],
+ sust:[["Berenjena","zucchini o zapallitos cortados igual de gruesos"],["Queso fresco","port salut, o feta desmenuzado"]],
+ s:["Cortá berenjena, morrón y cebolla en tiras gruesas y saláas.","Mezclá con aceite, comino y pimentón.","Airfryer a 200 °C, dieciocho minutos, sacudiendo dos veces.","Calentá las tortillas y armá con el queso, el yogur y jugo de lima."],
+ tip:"Salá la berenjena diez minutos antes y secala: suelta el agua y en la airfryer se dora en vez de cocerse al vapor."},
+
+{id:"a15",t:"almuerzo",n:"Ceviche de pescado blanco",d:"Sin fuego, sin agua y sin lavar casi nada. El almuerzo de los días de calor.",min:25,k:340,p:42,c:24,g:8,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Filete de pescado blanco",400,"g"],["Lima",6,"u"],["Cebolla morada",1,"u"],["Cilantro",1,"puñado"],["Batata",200,"g"],["Choclo en lata",100,"g"],["Sal",1,"cdita"]],
+ sust:[["Filete de pescado blanco","corvina, lenguado o mero; tiene que ser muy fresco"],["Batata","se puede omitir y comerlo solo con choclo"]],
+ s:["Cortá el pescado en cubos de dos centímetros y salá.","Cubrí con el jugo de las limas y dejá quince minutos: la carne se pone opaca.","Sumá cebolla en pluma finísima y cilantro picado.","Serví con el choclo y la batata hervida en rodajas."],
+ tip:"Solo con pescado comprado el mismo día en la costa. Tierra adentro, o si dudás del frío, salteá esta receta."},
+
+{id:"a16",t:"almuerzo",n:"Croquetas de atún y papa",d:"Ocho croquetas al airfryer. Cuatro porciones que aguantan dos días.",min:35,k:400,p:34,c:36,g:13,rinde:4,agua:2,eq:["airfryer","hornalla"],
+ i:[["Papa",600,"g"],["Atún al agua",4,"lata"],["Huevos",2,"u"],["Cebolla",1,"u"],["Pan rallado",60,"g"],["Perejil",1,"puñado"],["Aceite de oliva",1,"cda"],["Sal",1,"cdita"]],
+ sust:[["Papa","batata o yuca hervida, que abundan en Centroamérica"]],
+ s:["Herví las papas y pisalas sin leche; dejalas entibiar.","Mezclá con el atún bien escurrido, cebolla picada fina, huevos y perejil.","Armá ocho croquetas y pasalas por pan rallado.","Airfryer a 190 °C, quince minutos, dándolas vuelta a la mitad."],
+ tip:"El puré tiene que estar frío antes de armar: caliente no liga y las croquetas se abren."},
+
+{id:"a17",t:"almuerzo",n:"Ensalada de porotos con huevo",d:"Todo de la caja seca menos el huevo. Cero heladera, cero fuego salvo hervir.",min:15,k:450,p:32,c:48,g:15,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Porotos negros en lata",1,"lata"],["Huevos",4,"u"],["Morrón",1,"u"],["Cebolla morada",1,"u"],["Choclo en lata",100,"g"],["Aceite de oliva",1,"cda"],["Limón",1,"u"],["Comino",1,"cdita"],["Cilantro",1,"puñado"]],
+ sust:[["Porotos negros en lata","porotos rojos, alubias o garbanzos"]],
+ s:["Herví los huevos diez minutos.","Enjuagá bien los porotos y el choclo.","Picá morrón y cebolla en cubos chicos.","Mezclá todo, aliñá con aceite, limón, comino y cilantro, y sumá los huevos en cuartos."],
+ tip:"Enjuagar los porotos de lata les saca el almidón turbio y buena parte del sodio."},
+
+{id:"a18",t:"almuerzo",n:"Pizza de sartén con atún",d:"Masa de yogur, tapada a fuego bajo. Sin horno y en veinte minutos.",min:25,k:490,p:36,c:48,g:17,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Harina integral",180,"g"],["Yogur griego natural",120,"g"],["Polvo de hornear",1,"cdita"],["Tomate triturado",200,"g"],["Queso muzzarella",120,"g"],["Atún al agua",2,"lata"],["Aceitunas",40,"g"],["Orégano",1,"cdita"],["Aceite de oliva",1,"cda"],["Sal",1,"cdita"]],
+ sust:[["Queso muzzarella","cualquier queso que funda"],["Atún al agua","sardinas, o solo verduras si querés bajarle la sal"]],
+ s:["Amasá harina, yogur, polvo de hornear y sal; estirá del tamaño de la sartén.","Cociná la masa sola, tapada, cinco minutos a fuego bajo.","Dala vuelta, poné tomate, queso, atún y aceitunas.","Tapá otros ocho minutos a fuego mínimo hasta que funda el queso."],
+ tip:"Fuego mínimo y siempre tapada: la tapa hace de horno y funde el queso sin quemar la base."},
+
+{id:"a19",t:"almuerzo",n:"Sopa paraguaya liviana",d:"El pan de maíz con queso, con más huevo y menos grasa. Seis porciones.",min:45,k:390,p:24,c:38,g:16,rinde:6,agua:1,eq:["airfryer"],
+ i:[["Harina de maíz",300,"g"],["Queso fresco",300,"g"],["Huevos",5,"u"],["Cebolla",2,"u"],["Leche descremada",300,"ml"],["Aceite de oliva",2,"cda"],["Sal",1,"cdita"]],
+ sust:[["Harina de maíz","polenta fina o harina de maíz precocida"],["Queso fresco","queso Paraguay, cuartirolo o port salut"]],
+ s:["Rehogá la cebolla picada fina hasta que esté transparente y dejala enfriar.","Mezclá la harina de maíz con la leche y los huevos batidos.","Sumá el queso desmenuzado, la cebolla, el aceite y la sal.","Volcá en el tupper de vidrio aceitado y airfryer a 175 °C, treinta minutos, hasta que la superficie esté dorada y firme."],
+ tip:"La original lleva mucha más grasa: acá el volumen lo dan los huevos y la cebolla, y queda igual de húmeda."},
+
+{id:"a20",t:"almuerzo",n:"Humita simplificada en olla",d:"Choclo, cebolla y queso en una sola olla. Cuatro porciones.",min:30,k:400,p:22,c:46,g:15,rinde:4,agua:1,eq:["hornalla"],
+ i:[["Choclo en lata",600,"g"],["Cebolla",2,"u"],["Morrón",1,"u"],["Queso fresco",200,"g"],["Leche descremada",200,"ml"],["Huevos",2,"u"],["Aceite de oliva",1,"cda"],["Pimentón",1,"cdita"],["Sal",1,"cdita"]],
+ sust:[["Choclo en lata","choclos frescos rallados, mucho mejor y baratísimo en Perú y Bolivia"],["Queso fresco","port salut, cuartirolo o queso andino"]],
+ s:["Rehogá cebolla y morrón picados con el pimentón hasta que estén bien tiernos.","Sumá el choclo escurrido y la leche; cociná quince minutos revolviendo.","Pisá parte del choclo con el pisapapas para espesar.","Bajá el fuego, sumá los huevos batidos y el queso en cubos, revolvé dos minutos y serví."],
+ tip:"Con choclo fresco rallado queda muchísimo mejor: entre Bolivia y el norte argentino aprovechá y hacela así."},
+/* ================= MERIENDAS ================= */
+{id:"m1",t:"merienda",n:"Mate con tostadas de queso",d:"La merienda de todos los días. Pan integral, untable y tomate.",min:8,k:220,p:14,c:26,g:7,rinde:2,agua:1,eq:["pava","tostadora"],
+ i:[["Pan integral",4,"reb"],["Queso untable descremado",100,"g"],["Tomate",1,"u"],["Yerba mate",1,"puñado"],["Sal",1,"pizca"],["Orégano",1,"pizca"]],
+ sust:[["Queso untable descremado","ricota descremada, que tiene casi el doble de proteína"]],
+ s:["Cebá el mate como corresponde.","Tostá el pan.","Untá el queso y poné rodajas finas de tomate.","Terminá con sal y orégano."],
+ tip:"Con el termo ya caliente son tres minutos: la merienda que más veces vas a repetir del viaje."},
+
+{id:"m2",t:"merienda",n:"Yogur griego con nueces",d:"Tres ingredientes, veintidós gramos de proteína.",min:3,k:250,p:22,c:15,g:12,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Yogur griego natural",300,"g"],["Nueces",25,"g"],["Canela",1,"pizca"],["Miel",1,"cdita"]],
+ sust:[["Nueces","maní, almendras o castañas"]],
+ s:["Repartí el yogur en dos vasos.","Picá las nueces gruesas.","Sumá canela y un hilo de miel.","Mezclá apenas y listo."],
+ tip:"La canela da dulzor sin azúcar; con eso alcanza para bajar bastante la miel."},
+
+{id:"m3",t:"merienda",n:"Huevos duros con morrón",d:"Proteína pura para cortar el hambre de las cuatro de la tarde.",min:12,k:200,p:18,c:6,g:12,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Huevos",4,"u"],["Morrón",1,"u"],["Sal",1,"pizca"],["Pimentón",1,"pizca"]],
+ sust:[["Morrón","zanahoria o pepino en bastones"]],
+ s:["Herví los huevos diez minutos y pasalos por agua fría.","Pelalos y cortalos al medio.","Cortá el morrón en bastones.","Sal y pimentón arriba."],
+ tip:"Si los hervís de mañana junto con el desayuno, esta merienda no necesita fuego."},
+
+{id:"m4",t:"merienda",n:"Tostadas de ricota y nuez",d:"Ricota descremada, un toque de miel y nueces picadas.",min:6,k:260,p:18,c:26,g:10,rinde:2,agua:0,eq:["tostadora"],
+ i:[["Ricota descremada",150,"g"],["Pan integral",4,"reb"],["Nueces",20,"g"],["Miel",1,"cdita"],["Canela",1,"pizca"]],
+ sust:[["Ricota descremada","requesón o cottage pisado"]],
+ s:["Tostá el pan.","Untá la ricota generosa.","Sumá nueces picadas y un hilo de miel.","Terminá con canela."],
+ tip:"La ricota descremada tiene casi el doble de proteína que el queso untable, a igual cantidad."},
+
+{id:"m5",t:"merienda",n:"Picada de ruta",d:"Queso, almendras y aceitunas. Se arma sobre el capó sin cocinar nada.",min:4,k:280,p:16,c:8,g:22,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Queso port salut",80,"g"],["Almendras",30,"g"],["Aceitunas",50,"g"]],
+ sust:[["Queso port salut","el queso duro local: aguanta más horas fuera de la heladera"]],
+ s:["Cortá el queso en cubos.","Serví con almendras y aceitunas.","Nada más."],
+ tip:"Es la más grasa del grupo: dejala para los días de caminata larga, no para los de manejar."},
+
+{id:"m6",t:"merienda",n:"Licuado de frutilla y proteína",d:"Refrescante, veintiocho gramos de proteína y muy poca grasa.",min:4,k:230,p:28,c:20,g:4,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Proteína en polvo",45,"g"],["Frutillas",200,"g"],["Leche descremada",400,"ml"]],
+ sust:[["Frutillas","mango, maracuyá o la fruta de estación del lugar"]],
+ s:["Poné la leche en la botella.","Sumá la proteína y agitá bien.","Agregá las frutillas cortadas.","Licuá o pisá y mezclá."],
+ tip:"Con hielo de la conservadora rinde el doble en los tramos de calor del norte."},
+
+{id:"m7",t:"merienda",n:"Sardinas sobre galletas de arroz",d:"Omega 3 y proteína desde una lata. Cero refrigeración.",min:5,k:270,p:24,c:20,g:12,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Sardinas en aceite",1,"lata"],["Galletas de arroz",6,"u"],["Limón",1,"u"],["Pimienta",1,"pizca"]],
+ sust:[["Galletas de arroz","tostadas, pan seco o galletas de agua"]],
+ s:["Escurrí las sardinas.","Pisalas apenas con un tenedor.","Repartí sobre las galletas.","Limón y pimienta arriba."],
+ tip:"La sardina tiene más calcio y omega 3 que el atún y cuesta menos: conviene alternarlas."},
+
+{id:"m8",t:"merienda",n:"Cottage con tomate y orégano",d:"La opción más liviana: veinticuatro gramos de proteína y poca grasa.",min:4,k:210,p:24,c:14,g:6,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Queso cottage",300,"g"],["Tomate",2,"u"],["Orégano",1,"pizca"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Queso cottage","ricota descremada, que se consigue en toda la ruta"]],
+ s:["Repartí el cottage en dos bowls.","Cortá el tomate en cubos.","Sumá sal, orégano y un hilo de aceite."],
+ tip:"Donde no haya cottage ni ricota, yogur griego colado con sal hace el mismo papel."},
+
+{id:"m9",t:"merienda",n:"Barritas de avena y maní",d:"Seis barritas al airfryer que duran cuatro días en la ruta.",min:25,k:240,p:12,c:28,g:10,rinde:6,agua:0,eq:["airfryer"],
+ i:[["Avena",150,"g"],["Mantequilla de maní",60,"g"],["Proteína en polvo",30,"g"],["Banana",2,"u"],["Miel",2,"cda"]],
+ sust:[["Mantequilla de maní","cualquier pasta de frutos secos, o maní procesado"]],
+ s:["Pisá las bananas y mezclá con maní y miel.","Sumá avena y proteína hasta formar una pasta densa.","Armá seis barritas sobre papel de horno en el tupper.","Doce minutos a 160 °C; dejalas enfriar antes de despegarlas."],
+ tip:"Tienen que enfriarse enteras antes de moverlas o se desarman."},
+
+{id:"m10",t:"merienda",n:"Manzana con maní y café con leche",d:"La merienda de parador: fruta, grasa buena y un café decente.",min:5,k:280,p:14,c:32,g:12,rinde:2,agua:1,eq:["cafetera"],
+ i:[["Manzana",2,"u"],["Mantequilla de maní",30,"g"],["Leche descremada",300,"ml"],["Café",2,"cda"],["Canela",1,"pizca"]],
+ sust:[["Manzana","banana, pera o mango"]],
+ s:["Preparé el café en la cafetera.","Calentá la leche y mezclá.","Cortá las manzanas en gajos.","Serví con el maní al costado para mojar."],
+ tip:"Medí el maní con cuchara y no a ojo: es de lo más fácil de pasarse en el viaje."},
+
+{id:"m11",t:"merienda",n:"Granola casera al airfryer",d:"Una tanda de ocho porciones que dura dos semanas en frasco.",min:20,k:230,p:9,c:26,g:11,rinde:8,agua:0,eq:["airfryer"],
+ i:[["Avena",300,"g"],["Almendras",80,"g"],["Nueces",60,"g"],["Coco rallado",40,"g"],["Miel",4,"cda"],["Aceite de oliva",2,"cda"],["Canela",1,"cdita"]],
+ sust:[["Coco rallado","semillas de girasol o zapallo"],["Miel","panela rallada, muy fácil de conseguir en Colombia"]],
+ s:["Mezclá todo hasta que la avena quede apenas húmeda.","Extendé en el tupper sin amontonar.","Airfryer a 160 °C, diez minutos, revolviendo cada tres.","Dejá enfriar del todo antes de guardar en frasco cerrado."],
+ tip:"Queda blanda al salir y crocante al enfriarse. Si la tocás caliente vas a pensar que salió mal."},
+
+{id:"m12",t:"merienda",n:"Budín de banana y avena",d:"Seis porciones en el tupper de vidrio. Sin azúcar agregada.",min:35,k:250,p:14,c:34,g:8,rinde:6,agua:0,eq:["airfryer"],
+ i:[["Avena",200,"g"],["Banana",3,"u"],["Huevos",4,"u"],["Yogur griego natural",150,"g"],["Proteína en polvo",30,"g"],["Polvo de hornear",1,"cdita"],["Canela",1,"cdita"],["Nueces",40,"g"]],
+ sust:[["Proteína en polvo","30 g más de avena; baja la proteína pero funciona igual"]],
+ s:["Pisá las bananas y mezclá con huevos y yogur.","Sumá avena, proteína, polvo de hornear y canela.","Volcá en el tupper aceitado y tirá las nueces arriba.","Airfryer a 165 °C, veinticinco minutos; pinchá con un cuchillo para ver si sale limpio."],
+ tip:"Cuanto más maduras las bananas, más dulce sale sin agregar nada."},
+
+{id:"m13",t:"merienda",n:"Chipá de queso al airfryer",d:"Ocho chipás paraguayos. Se comen con mate y aguantan el día.",min:30,k:220,p:13,c:20,g:10,rinde:8,agua:0,eq:["airfryer"],
+ i:[["Almidón de mandioca",300,"g"],["Queso fresco",250,"g"],["Huevos",3,"u"],["Leche descremada",80,"ml"],["Aceite de oliva",1,"cda"],["Sal",1,"cdita"]],
+ sust:[["Almidón de mandioca","almidón de yuca o tapioca: es lo mismo con otro nombre según el país"],["Queso fresco","queso Paraguay, cuartirolo o cualquier queso duro rallado"]],
+ s:["Rallá el queso y mezclalo con los huevos, el aceite y la sal.","Sumá el almidón de a poco hasta formar una masa que no se pegue.","Ajustá con la leche si queda seca; armá ocho bollitos.","Airfryer a 180 °C, quince minutos, hasta que estén dorados."],
+ tip:"Se comen el mismo día: al otro se ponen duros. Recalentalos dos minutos en la airfryer y vuelven."},
+
+{id:"m14",t:"merienda",n:"Quesadilla de queso y palta",d:"Tortilla, queso fundido y palta. Sin agua y en cinco minutos.",min:7,k:290,p:15,c:24,g:16,rinde:2,agua:0,eq:["hornalla"],
+ i:[["Tortillas de maíz",4,"u"],["Queso muzzarella",80,"g"],["Palta",1,"u"],["Cilantro",1,"puñado"],["Lima",1,"u"],["Sal",1,"pizca"]],
+ sust:[["Queso muzzarella","Oaxaca en México, o cualquiera que hile"]],
+ s:["Poné las tortillas en sartén seca con el queso adentro.","Doblá y cociná dos minutos por lado hasta que funda.","Abrí y sumá palta en láminas.","Terminá con cilantro, sal y jugo de lima."],
+ tip:"Sartén seca, sin aceite: la tortilla se tuesta sola y no queda aceitosa."},
+
+{id:"m15",t:"merienda",n:"Yogur con avena y manzana rallada",d:"Se arma en el vaso, sin cocinar y sin lavar nada más que la cuchara.",min:5,k:270,p:22,c:34,g:6,rinde:2,agua:0,eq:["ninguno"],
+ i:[["Yogur griego natural",300,"g"],["Avena",50,"g"],["Manzana",1,"u"],["Canela",1,"cdita"],["Miel",1,"cdita"]],
+ sust:[["Manzana","pera, banana o durazno"]],
+ s:["Rallá la manzana con cáscara.","Mezclala con el yogur y la avena.","Sumá canela y miel.","Dejá reposar cinco minutos para que la avena se ablande."],
+ tip:"Es prácticamente la avena overnight en versión express: cinco minutos alcanzan si rallás la manzana fina."},
+
+{id:"m16",t:"merienda",n:"Huevos rellenos con atún",d:"Cuatro huevos rellenos con atún y yogur. Se hacen a la mañana y esperan.",min:15,k:240,p:26,c:4,g:13,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Huevos",4,"u"],["Atún al agua",1,"lata"],["Yogur griego natural",50,"g"],["Mostaza",1,"cdita"],["Perejil",1,"puñado"],["Pimentón",1,"pizca"]],
+ sust:[["Yogur griego natural","una cucharada de aceite de oliva si no hay frío"]],
+ s:["Herví los huevos diez minutos y pelalos.","Cortalos al medio y sacá las yemas.","Pisá las yemas con el atún, el yogur y la mostaza.","Rellená las mitades y espolvoreá pimentón y perejil."],
+ tip:"Aprovechá una tanda de huevos hervidos para esto y para el desayuno del día siguiente."},
+
+{id:"m17",t:"merienda",n:"Café helado proteico",d:"Café frío, leche y proteína. Levanta la tarde de manejo sin comida pesada.",min:5,k:180,p:26,c:12,g:3,rinde:2,agua:0,eq:["cafetera"],
+ i:[["Café",3,"cda"],["Leche descremada",400,"ml"],["Proteína en polvo",45,"g"],["Canela",1,"pizca"]],
+ sust:[["Proteína en polvo","leche en polvo: menos proteína pero misma cremosidad"]],
+ s:["Preparé el café bien cargado y dejalo enfriar.","Mezclá la leche con la proteína en la botella y agitá.","Sumá el café frío y hielo si tenés.","Canela arriba."],
+ tip:"Prepará el café de más a la mañana y guardalo frío: a la tarde ya está listo."},
+
+{id:"m18",t:"merienda",n:"Hummus con bastones de verdura",d:"Cuatro porciones de hummus casero que aguantan dos días en la heladera.",min:15,k:230,p:12,c:26,g:10,rinde:4,agua:0,eq:["ninguno"],
+ i:[["Garbanzos en lata",2,"lata"],["Mantequilla de maní",2,"cda"],["Limón",2,"u"],["Ajo",1,"diente"],["Comino",1,"cdita"],["Aceite de oliva",2,"cda"],["Zanahoria",3,"u"],["Apio",4,"u"],["Sal",1,"cdita"]],
+ sust:[["Mantequilla de maní","tahini si lo conseguís; el maní hace el mismo trabajo"],["Zanahoria","pepino, morrón o galletas de arroz"]],
+ s:["Escurrí los garbanzos guardando un poco del líquido.","Pisalos bien con el pisapapas o procesalos.","Mezclá con maní, limón, ajo rallado, comino, aceite y sal.","Ajustá con el líquido reservado hasta que quede cremoso; serví con los bastones."],
+ tip:"Sin procesadora queda rústico y está igual de bueno. Pisá caliente si podés: se deshacen mejor."},
+
+{id:"m19",t:"merienda",n:"Tostada de sardina y palta",d:"Grasa buena, proteína y todo desde una lata. Sin heladera.",min:6,k:300,p:22,c:24,g:15,rinde:2,agua:0,eq:["tostadora"],
+ i:[["Sardinas en aceite",1,"lata"],["Pan integral",4,"reb"],["Palta",1,"u"],["Tomate",1,"u"],["Limón",1,"u"],["Pimienta",1,"pizca"]],
+ sust:[["Sardinas en aceite","caballa o atún"]],
+ s:["Tostá el pan.","Pisá la palta con limón y sal y untá.","Poné las sardinas escurridas arriba.","Terminá con tomate en rodajas y pimienta."],
+ tip:"Escurrí bien el aceite de la lata: son unas cien calorías que no aportan nada al plato."},
+
+{id:"m20",t:"merienda",n:"Bolitas de avena, coco y maní",d:"Diez bolitas sin cocción que viven en la guantera.",min:15,k:190,p:9,c:22,g:9,rinde:10,agua:0,eq:["ninguno"],
+ i:[["Avena",200,"g"],["Mantequilla de maní",80,"g"],["Proteína en polvo",30,"g"],["Miel",3,"cda"],["Coco rallado",40,"g"],["Canela",1,"cdita"]],
+ sust:[["Coco rallado","cacao amargo o avena molida para rebozar"]],
+ s:["Mezclá avena, proteína, maní, miel y canela hasta formar una pasta pegajosa.","Si está muy seca sumá una cucharada de agua; si está muy blanda, más avena.","Armá diez bolitas del tamaño de una nuez.","Rebozalas en coco rallado y dejalas una hora en la heladera."],
+ tip:"Es la única merienda que aguanta sin frío todo el día en la cabina: la mejor para tramos largos."},
+/* ================= CENAS ================= */
+{id:"c1",t:"cena",n:"Merluza al airfryer con brócoli",d:"Cuarenta y cinco gramos de proteína, quince de hidratos. La cena más liviana.",min:20,k:380,p:45,c:15,g:15,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Filete de merluza",400,"g"],["Brócoli",300,"g"],["Ajo",2,"diente"],["Aceite de oliva",1,"cda"],["Limón",1,"u"],["Sal",1,"pizca"],["Pimienta",1,"pizca"]],
+ sust:[["Filete de merluza","corvina, tilapia o el pescado blanco de la costa"],["Brócoli","coliflor, chauchas o zapallitos"]],
+ s:["Condimentá el pescado con ajo picado, sal, pimienta y aceite.","Cortá el brócoli en floretes y mezclalo con un poco de aceite.","Airfryer a 190 °C: brócoli ocho minutos, después sumá el pescado diez más.","Serví con limón exprimido arriba."],
+ tip:"Si el pescado viene congelado, descongelalo en la heladera durante el día: en el mostrador se pasa y suelta agua."},
+
+{id:"c2",t:"cena",n:"Wok de camarones con fideos de arroz",d:"Fideos que se hidratan sin hervir y verduras al wok. Doce minutos.",min:18,k:450,p:38,c:50,g:10,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Camarones",300,"g"],["Fideos de arroz",120,"g"],["Morrón",1,"u"],["Zucchini",1,"u"],["Salsa de soja",2,"cda"],["Ajo",2,"diente"],["Jengibre",1,"cdita"],["Aceite de oliva",1,"cdita"]],
+ sust:[["Fideos de arroz","fideos comunes hervidos, aunque gastás más agua"],["Camarones","pescado blanco en cubos"]],
+ s:["Poné los fideos en agua caliente hasta que se ablanden y escurrí.","Salteá ajo y jengibre en el wok bien caliente.","Sumá morrón y zucchini en tiras, dos minutos.","Agregá camarones y soja, tres minutos, y mezclá con los fideos."],
+ tip:"Los fideos de arroz solo necesitan agua caliente, así que ahorrás una hornalla en la cocina de una boca."},
+
+{id:"c3",t:"cena",n:"Tortilla de papa liviana",d:"La de siempre con menos aceite y más huevo. Cuatro porciones: sobra el desayuno.",min:30,k:420,p:28,c:35,g:18,rinde:4,agua:2,eq:["hornalla"],
+ i:[["Huevos",8,"u"],["Papa",600,"g"],["Cebolla",2,"u"],["Queso port salut",60,"g"],["Aceite de oliva",1,"cda"],["Sal",1,"cdita"]],
+ sust:[["Papa","batata o yuca, más baratas en Centroamérica"]],
+ s:["Cortá las papas en rodajas finas y hervilas ocho minutos en vez de freírlas.","Rehogá la cebolla con el aceite.","Batí los huevos con sal y sumá papa, cebolla y queso.","Volcá en la sartén, fuego bajo, tapada; dala vuelta con un plato y terminá."],
+ tip:"Hervir las papas en lugar de freírlas saca unas doscientas calorías por porción sin cambiar la textura."},
+
+{id:"c4",t:"cena",n:"Sopa de verduras con huevo escalfado",d:"Para las noches frías de altura. Una olla y calienta el cuerpo.",min:25,k:330,p:24,c:30,g:12,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Zapallo",300,"g"],["Zanahoria",2,"u"],["Apio",2,"u"],["Cebolla",1,"u"],["Huevos",4,"u"],["Queso rallado",30,"g"],["Caldo de verduras en cubo",1,"u"],["Sal",1,"pizca"]],
+ sust:[["Zapallo","calabaza, auyama o zapallo loche según el país"]],
+ s:["Cortá todas las verduras en cubos y cubrí con agua y el caldo.","Herví veinte minutos hasta que estén tiernas.","Bajá el fuego y rompé los huevos dentro, uno por uno.","Tapá tres minutos, serví con queso rallado."],
+ tip:"En la puna el agua hierve a menos temperatura: contá cinco o seis minutos más de cocción."},
+
+{id:"c5",t:"cena",n:"Hamburguesas de atún al airfryer",d:"Tres latas de atún, avena para ligar y ensalada al lado.",min:20,k:420,p:42,c:25,g:16,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Atún al agua",3,"lata"],["Huevos",1,"u"],["Avena",40,"g"],["Cebolla",1,"u"],["Mix de hojas verdes",150,"g"],["Tomate",2,"u"],["Aceite de oliva",1,"cda"],["Limón",1,"u"]],
+ sust:[["Avena","pan rallado o harina de maíz"],["Mix de hojas verdes","repollo en juliana"]],
+ s:["Escurrí muy bien el atún y mezclalo con huevo, avena y cebolla picada fina.","Armá cuatro medallones y dejalos diez minutos en la heladera.","Airfryer a 190 °C, doce minutos, dándolos vuelta a la mitad.","Serví con la ensalada aliñada con aceite y limón."],
+ tip:"Escurrir el atún apretándolo de verdad es lo que hace que los medallones no se desarmen."},
+
+{id:"c6",t:"cena",n:"Salmón al airfryer con batata",d:"Cena de día especial: salmón, batata asada y romero.",min:30,k:480,p:38,c:35,g:20,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Salmón fresco",350,"g"],["Batata",400,"g"],["Aceite de oliva",1,"cda"],["Romero",1,"cdita"],["Limón",1,"u"],["Sal",1,"pizca"],["Pimienta",1,"pizca"]],
+ sust:[["Salmón fresco","trucha en la Patagonia y el sur de Chile, mucho más barata"]],
+ s:["Cortá la batata en cubos y mezclá con aceite, romero y sal.","Airfryer a 200 °C, quince minutos, sacudiendo a la mitad.","Sumá el salmón con sal y pimienta arriba, ocho minutos más.","Serví con limón."],
+ tip:"El salmón queda mejor apenas rosado en el centro: si esperás a que esté opaco entero, ya se pasó."},
+
+{id:"c7",t:"cena",n:"Revuelto de zapallitos con queso",d:"Cena rápida de una sola sartén, sin hidratos y muy liviana.",min:15,k:350,p:28,c:12,g:22,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",6,"u"],["Zapallitos",400,"g"],["Cebolla",1,"u"],["Queso port salut",50,"g"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Zapallitos","zucchini, chayote o berenjena"]],
+ s:["Cortá los zapallitos en rodajas y la cebolla en pluma.","Rehogá todo hasta que estén tiernos, unos ocho minutos.","Sumá los huevos batidos y revolvé.","Antes de que cuajen del todo, sumá el queso y apagá."],
+ tip:"Si los zapallitos sueltan mucha agua, subí el fuego un minuto destapado antes de sumar el huevo."},
+
+{id:"c8",t:"cena",n:"Berenjenas rellenas de atún",d:"Se vacían, se rellenan y van al airfryer. Se ve más elaborada de lo que es.",min:30,k:400,p:34,c:25,g:20,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Berenjena",2,"u"],["Atún al agua",2,"lata"],["Tomate",1,"u"],["Cebolla",1,"u"],["Queso rallado",50,"g"],["Aceite de oliva",1,"cda"],["Orégano",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Berenjena","zucchini o zapallitos redondos"]],
+ s:["Cortá las berenjenas al medio y hacé cortes en la pulpa; airfryer a 190 °C, doce minutos.","Sacá parte de la pulpa y picala con cebolla y tomate.","Rehogá esa mezcla y sumá el atún escurrido y orégano.","Rellená, cubrí con queso y volvé al airfryer ocho minutos."],
+ tip:"Sacar la pulpa después de la primera cocción es mucho más fácil que hacerlo en crudo."},
+
+{id:"c9",t:"cena",n:"Ensalada tibia de lentejas y queso",d:"Cena de olla única para las noches en las que no querés cocinar.",min:15,k:430,p:30,c:45,g:15,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Lentejas en lata",1,"lata"],["Huevos",4,"u"],["Queso port salut",50,"g"],["Rúcula",100,"g"],["Tomate",2,"u"],["Aceite de oliva",1,"cda"],["Mostaza",1,"cdita"],["Sal",1,"pizca"]],
+ sust:[["Rúcula","cualquier hoja verde, o repollo en juliana fina"]],
+ s:["Herví los huevos diez minutos.","Enjuagá y calentá las lentejas apenas.","Mezclá aceite, mostaza y sal para el aliño.","Armá con rúcula, tomate, queso, lentejas y huevo en cuartos."],
+ tip:"La mostaza emulsiona el aliño y hace que se pegue a las lentejas en vez de irse al fondo del plato."},
+
+{id:"c10",t:"cena",n:"Curry de garbanzos y espinaca",d:"Sin pescado ni heladera: todo sale de la caja seca.",min:25,k:460,p:28,c:60,g:16,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Garbanzos en lata",1,"lata"],["Espinaca",200,"g"],["Leche de coco",150,"ml"],["Arroz",120,"g"],["Huevos",2,"u"],["Cebolla",1,"u"],["Ajo",2,"diente"],["Curry en polvo",1,"cda"],["Aceite de oliva",1,"cdita"]],
+ sust:[["Espinaca","acelga o repollo picado"]],
+ s:["Poné el arroz a hervir y herví los huevos en la misma olla.","Rehogá cebolla y ajo, sumá el curry y tostalo.","Agregá garbanzos y leche de coco, ocho minutos a fuego bajo.","Sumá la espinaca al final y serví sobre arroz con el huevo en mitades."],
+ tip:"Es la cena de los tramos largos entre pueblos: no depende de nada fresco salvo la cebolla."},
+
+{id:"c11",t:"cena",n:"Tarta de zapallitos y queso",d:"Cuatro porciones en el tupper de vidrio. La cena que deja el almuerzo hecho.",min:40,k:400,p:28,c:32,g:19,rinde:4,agua:1,eq:["airfryer"],
+ i:[["Harina integral",200,"g"],["Yogur griego natural",120,"g"],["Zapallitos",500,"g"],["Huevos",5,"u"],["Cebolla",1,"u"],["Queso port salut",120,"g"],["Queso rallado",40,"g"],["Aceite de oliva",2,"cda"],["Sal",1,"cdita"]],
+ sust:[["Zapallitos","zucchini, acelga o espinaca"],["Harina integral","tapas de tarta compradas"]],
+ s:["Amasá harina, yogur, una cucharada de aceite y sal; forrá el tupper aceitado.","Rehogá cebolla y zapallitos rallados hasta que suelten el agua y se evapore.","Mezclá con huevos batidos y los dos quesos.","Volcá y airfryer a 170 °C, veinticinco minutos, hasta que esté firme."],
+ tip:"El paso clave es evaporar el agua de los zapallitos: si no, la tarta queda cruda por dentro."},
+
+{id:"c12",t:"cena",n:"Merluza a la napolitana",d:"Milanesa de pescado con tomate y queso. La cena de premio del viaje.",min:25,k:450,p:48,c:24,g:18,rinde:2,agua:1,eq:["airfryer"],
+ i:[["Filete de merluza",400,"g"],["Pan rallado",50,"g"],["Huevos",1,"u"],["Tomate",2,"u"],["Queso muzzarella",100,"g"],["Orégano",1,"cdita"],["Mix de hojas verdes",150,"g"],["Aceite de oliva",1,"cda"],["Sal",1,"pizca"]],
+ sust:[["Queso muzzarella","cualquier queso que funda"],["Pan rallado","avena procesada"]],
+ s:["Secá y salá los filetes; pasalos por huevo y pan rallado.","Airfryer a 200 °C, diez minutos.","Cubrí cada uno con rodajas de tomate, queso y orégano.","Volvé cinco minutos más hasta que el queso funda; serví con ensalada."],
+ tip:"El queso va recién en los últimos cinco minutos: si entra desde el principio se quema y se pega a la canasta."},
+
+{id:"c13",t:"cena",n:"Zapallo relleno de quinoa y queso",d:"Medio zapallo por cabeza, relleno y gratinado. Vistoso y liviano.",min:40,k:420,p:26,c:48,g:15,rinde:2,agua:2,eq:["airfryer","hornalla"],
+ i:[["Zapallo",1,"u"],["Quinoa",120,"g"],["Queso port salut",100,"g"],["Cebolla",1,"u"],["Espinaca",150,"g"],["Nueces",30,"g"],["Aceite de oliva",1,"cda"],["Sal",1,"cdita"]],
+ sust:[["Zapallo","calabaza chica o auyama"],["Quinoa","arroz o cuscús"]],
+ s:["Cortá el zapallo al medio, sacá las semillas y airfryer a 190 °C, veinte minutos.","Herví la quinoa enjuagada y escurrila.","Salteá cebolla y espinaca y mezclá con la quinoa, las nueces y la mitad del queso.","Rellená, cubrí con el resto del queso y volvé al airfryer ocho minutos."],
+ tip:"Elegí zapallos chicos o partilos al medio: si no, no entran en la canasta."},
+
+{id:"c14",t:"cena",n:"Guiso de lentejas con zapallo",d:"Una olla, veinte minutos y calor de verdad para las noches de altura.",min:25,k:440,p:28,c:58,g:12,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Lentejas en lata",2,"lata"],["Zapallo",300,"g"],["Cebolla",1,"u"],["Morrón",1,"u"],["Zanahoria",1,"u"],["Huevos",2,"u"],["Caldo de verduras en cubo",1,"u"],["Pimentón",1,"cdita"],["Comino",1,"cdita"],["Aceite de oliva",1,"cda"]],
+ sust:[["Lentejas en lata","porotos, garbanzos o lentejas secas remojadas la noche anterior"]],
+ s:["Rehogá cebolla, morrón y zanahoria con pimentón y comino.","Sumá el zapallo en cubos, el caldo y agua hasta cubrir; herví quince minutos.","Agregá las lentejas escurridas y cociná cinco minutos más.","Rompé los huevos encima, tapá tres minutos y serví."],
+ tip:"El huevo escalfado encima del guiso suma catorce gramos de proteína sin cambiarle el sabor."},
+
+{id:"c15",t:"cena",n:"Salteado de repollo, huevo y fideos",d:"Todo en el wok con repollo, que es la verdura que más aguanta.",min:18,k:430,p:26,c:52,g:14,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Repollo",300,"g"],["Fideos integrales",150,"g"],["Huevos",4,"u"],["Zanahoria",1,"u"],["Cebolla de verdeo",2,"u"],["Salsa de soja",2,"cda"],["Ajo",2,"diente"],["Jengibre",1,"cdita"],["Aceite de oliva",1,"cda"]],
+ sust:[["Fideos integrales","fideos de arroz, que no necesitan hervor"],["Repollo","col china, acelga o brócoli"]],
+ s:["Herví los fideos y escurrí.","Revolvé los huevos aparte en el wok y reservá.","Salteá ajo, jengibre, repollo y zanahoria en juliana, tres minutos a fuego fuerte.","Sumá fideos, huevo y soja, mezclá un minuto y terminá con verdeo."],
+ tip:"Un repollo entero dura dos semanas sin heladera: es la verdura más rentable del viaje."},
+
+{id:"c16",t:"cena",n:"Cazuela de pescado con papa",d:"Pescado, papa y tomate en una sola olla. Sale sola mientras armás la carpa.",min:30,k:420,p:42,c:36,g:12,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Filete de pescado blanco",400,"g"],["Papa",400,"g"],["Tomate triturado",400,"g"],["Cebolla",1,"u"],["Morrón",1,"u"],["Ajo",2,"diente"],["Caldo de verduras en cubo",1,"u"],["Pimentón",1,"cdita"],["Aceite de oliva",1,"cda"],["Perejil",1,"puñado"]],
+ sust:[["Filete de pescado blanco","cualquier pescado firme; el que se deshace también sirve"]],
+ s:["Rehogá cebolla, ajo y morrón con el pimentón.","Sumá papa en cubos, tomate, caldo y agua hasta cubrir; herví quince minutos.","Apoyá el pescado encima, tapá y cociná ocho minutos sin revolver.","Terminá con perejil picado."],
+ tip:"El pescado va arriba y sin revolver: se cocina al vapor y llega entero al plato."},
+
+{id:"c17",t:"cena",n:"Omelette de camarones y queso",d:"Diez minutos, una sartén y cuarenta gramos de proteína.",min:12,k:390,p:40,c:8,g:22,rinde:2,agua:1,eq:["hornalla"],
+ i:[["Huevos",6,"u"],["Camarones",200,"g"],["Queso port salut",60,"g"],["Cebolla de verdeo",2,"u"],["Aceite de oliva",1,"cdita"],["Sal",1,"pizca"],["Pimienta",1,"pizca"]],
+ sust:[["Camarones","atún escurrido o pescado desmenuzado que haya sobrado"]],
+ s:["Salteá los camarones dos minutos y reservá.","Batí los huevos con sal, pimienta y el verdeo picado.","Volcá en la sartén a fuego medio-bajo hasta que cuaje la base.","Sumá camarones y queso en una mitad, doblá y serví."],
+ tip:"Los camarones se cocinan en dos minutos: si los dejás más se ponen duros como goma."},
+
+{id:"c18",t:"cena",n:"Fideos con brócoli, ajo y queso",d:"El brócoli se hierve con los fideos en la misma olla. Un solo hervor.",min:20,k:460,p:26,c:62,g:14,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Fideos integrales",160,"g"],["Brócoli",300,"g"],["Ajo",3,"diente"],["Queso rallado",60,"g"],["Nueces",30,"g"],["Aceite de oliva",2,"cda"],["Sal",1,"cdita"],["Pimienta",1,"pizca"]],
+ sust:[["Brócoli","coliflor, chauchas o espinaca sumada al final"],["Nueces","almendras o maní tostado"]],
+ s:["Herví los fideos y sumá el brócoli en floretes en los últimos cinco minutos.","Mientras, dorá el ajo laminado en el aceite a fuego bajo.","Escurrí guardando media taza del agua de cocción.","Mezclá todo con el ajo, el queso, las nueces y el agua reservada."],
+ tip:"El agua de cocción con almidón es lo que hace la salsa: guardá siempre media taza antes de colar."},
+
+{id:"c19",t:"cena",n:"Ensalada tibia de papa, huevo y atún",d:"Papa hervida, huevo y atún con aliño de mostaza. Se come tibia o fría.",min:25,k:450,p:34,c:44,g:15,rinde:2,agua:2,eq:["hornalla"],
+ i:[["Papa",500,"g"],["Huevos",4,"u"],["Atún al agua",2,"lata"],["Cebolla morada",1,"u"],["Aceitunas",40,"g"],["Mostaza",1,"cdita"],["Aceite de oliva",1,"cda"],["Vinagre",1,"cda"],["Perejil",1,"puñado"]],
+ sust:[["Papa","batata, yuca o choclo desgranado"]],
+ s:["Herví las papas en cubos y los huevos en la misma olla.","Mezclá mostaza, aceite, vinagre, sal y pimienta para el aliño.","Combiná papa tibia, atún escurrido, cebolla en pluma y aceitunas.","Sumá los huevos en cuartos y el perejil."],
+ tip:"Aliñá la papa todavía tibia: absorbe el aliño y queda con mucho más sabor que fría."},
+
+{id:"c20",t:"cena",n:"Burritos de porotos al airfryer",d:"Cuatro burritos dorados. Dos cenas o una cena y dos almuerzos.",min:30,k:430,p:26,c:52,g:14,rinde:4,agua:1,eq:["airfryer"],
+ i:[["Tortillas de trigo integral",4,"u"],["Porotos negros en lata",2,"lata"],["Arroz",100,"g"],["Queso muzzarella",120,"g"],["Cebolla",1,"u"],["Morrón",1,"u"],["Comino",1,"cdita"],["Pimentón",1,"cdita"],["Aceite de oliva",1,"cda"],["Cilantro",1,"puñado"]],
+ sust:[["Porotos negros en lata","frijoles refritos, lentejas o garbanzos pisados"],["Tortillas de trigo integral","tortillas comunes o arepas abiertas"]],
+ s:["Herví el arroz y rehogá cebolla y morrón con las especias.","Sumá los porotos escurridos y pisá la mitad para que ligue.","Rellená las tortillas con arroz, porotos, queso y cilantro; enrollá bien apretado.","Airfryer a 190 °C, ocho minutos, con el cierre para abajo."],
+ tip:"El cierre siempre para abajo en la primera mitad de la cocción: se sella solo y no se abre."}
+];
+
+/* ===== Estado ===== */
+const TIPOS = [{k:"desayuno",l:"Desayunos"},{k:"almuerzo",l:"Almuerzos"},{k:"merienda",l:"Meriendas"},{k:"cena",l:"Cenas"}];
+const AGUA_TXT = {0:"Sin gastar agua",1:"Una olla",2:"Hervir y colar"};
+let vista="desayuno", sel={}, tildes={}, kitTildes={}, filtros=new Set();
+let tengo={}, asumeBase=true;
+
+const almacen = {
+  /* Persistencia: fuera de claude.ai no existe window.storage, así que el
+     almacenamiento real es localStorage. Se mantiene el fallback para que el
+     archivo siga funcionando si se abre como artifact. */
+  async leer(){
+    try{
+      const l=localStorage.getItem("cocina-ruta-v2");
+      if(l) return JSON.parse(l);
+      if(window.storage){ const r=await window.storage.get("cocina-ruta-v2"); return r?JSON.parse(r.value):null; }
+      return null;
+    }catch(e){ return null; }
+  },
+  async guardar(){
+    const payload=JSON.stringify({sel,tildes,kitTildes,tengo});
+    try{ localStorage.setItem("cocina-ruta-v2",payload); }catch(e){}
+    try{ if(window.storage) await window.storage.set("cocina-ruta-v2",payload); }catch(e){}
+  }
+};
+
+const esFrio = r => r.i.some(([n]) => CAT[n] && CAT[n].f);
+const cubre  = r => r.rinde/2;                      // comidas para dos por tanda
+const comidasTipo = t => R.reduce((a,r)=> a + (r.t===t && sel[r.id] ? sel[r.id]*cubre(r) : 0), 0);
+const totalComidas = () => R.reduce((a,r)=> a + (sel[r.id] ? sel[r.id]*cubre(r) : 0), 0);
+const fmt = n => Number.isInteger(n) ? n : Math.round(n*10)/10;
+
+/* promedio por porción de un tipo, ponderado por comidas cubiertas */
+function promedio(t, campo){
+  let num=0, den=0;
+  R.forEach(r=>{ if(r.t===t && sel[r.id]){ const cm=sel[r.id]*cubre(r); num+=r[campo]*cm; den+=cm; }});
+  return den ? num/den : 0;
+}
+
+/* ===== Navegación ===== */
+function pintarNav(){
+  const nav=document.getElementById("nav"); nav.innerHTML="";
+  TIPOS.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="tab"; b.setAttribute("role","tab"); b.setAttribute("aria-selected", vista===t.k);
+    const c=comidasTipo(t.k);
+    b.innerHTML=t.l+(c?`<span class="n">${fmt(c)}</span>`:"");
+    b.onclick=()=>{ vista=t.k; pintar(); window.scrollTo({top:0,behavior:"smooth"}); };
+    nav.appendChild(b);
+  });
+  const m=document.createElement("button");
+  m.className="tab"; m.setAttribute("role","tab"); m.setAttribute("aria-selected", vista==="mercado");
+  const nt=Object.values(tengo).filter(Boolean).length;
+  m.innerHTML="Qué cocino"+(nt?`<span class="n">${nt}</span>`:"");
+  m.onclick=()=>{ vista="mercado"; pintar(); window.scrollTo({top:0,behavior:"smooth"}); };
+  nav.appendChild(m);
+
+  const b=document.createElement("button");
+  b.className="tab"; b.setAttribute("role","tab"); b.setAttribute("aria-selected", vista==="lista");
+  const n=totalComidas();
+  b.innerHTML="Lista de compras"+(n?`<span class="n">${fmt(n)}</span>`:"");
+  b.onclick=()=>{ vista="lista"; pintar(); window.scrollTo({top:0,behavior:"smooth"}); };
+  nav.appendChild(b);
+}
+
+/* ===== Recetas ===== */
+function pasaFiltro(r){
+  if(filtros.has("sinfrio") && esFrio(r)) return false;
+  if(filtros.has("sinagua") && r.agua!==0) return false;
+  if(filtros.has("sinfuego") && !r.eq.includes("ninguno")) return false;
+  if(filtros.has("rinde") && r.rinde<=2) return false;
+  if(filtros.has("rapido") && r.min>15) return false;
+  if(filtros.has("airfryer") && !r.eq.includes("airfryer")) return false;
+  return true;
+}
+
+function pintarRecetas(){
+  const g=document.getElementById("grilla"); g.innerHTML="";
+  const lista=R.filter(r=>r.t===vista && pasaFiltro(r));
+  if(!lista.length){
+    g.innerHTML=`<div class="vacio" style="grid-column:1/-1"><strong>No queda nada</strong>
+      <p>Ningún plato de esta comida cumple con los filtros activos. Soltá alguno para volver a ver opciones.</p></div>`;
+    return;
+  }
+  lista.forEach(r=>{
+    const veces=sel[r.id]||0, frio=esFrio(r), cm=cubre(r);
+    const el=document.createElement("article");
+    el.className="plato"+(veces?" elegido":"");
+    el.innerHTML=`
+      <div class="plato-cab">
+        <div class="cejilla"><span>${TIPOS.find(t=>t.k===r.t).l.slice(0,-1)}</span><span>${r.min} min</span></div>
+        <h3>${r.n}</h3><p class="desc">${r.d}</p>
+      </div>
+      ${r.rinde>2?`<span class="rinde-b">Rinde ${r.rinde} porciones · cociná una vez, comé ${cm} veces</span>`:""}
+      <div class="marcas">
+        <span class="marca-t ${frio?'frio':'seco'}">${frio?'Necesita heladera':'Sin cadena de frío'}</span>
+        <span class="marca-t ${r.agua===0?'agua0':''}">${AGUA_TXT[r.agua]}</span>
+        ${r.eq.filter(e=>e!=="ninguno").map(e=>`<span class="marca-t">${e}</span>`).join("")}
+        ${r.eq.includes("ninguno")?'<span class="marca-t">Sin cocción</span>':''}
+      </div>
+      <div class="tablero">
+        <div class="celda"><b>${r.k}</b><span>kcal</span></div>
+        <div class="celda prot"><b>${r.p}</b><span>prot g</span></div>
+        <div class="celda"><b>${r.c}</b><span>carb g</span></div>
+        <div class="celda"><b>${r.g}</b><span>gras g</span></div>
+      </div>
+      <div class="receta" id="rec-${r.id}">
+        <h4>Ingredientes · ${r.rinde} porciones</h4>
+        <ul>${r.i.map(([n,c,u])=>`<li>${n} <span class="cant">${c} ${u}</span></li>`).join("")}</ul>
+        <h4>Preparación</h4>
+        <ol>${r.s.map(p=>`<li>${p}</li>`).join("")}</ol>
+        ${r.sust&&r.sust.length?`<h4>Si no lo conseguís</h4><ul class="sust">${r.sust.map(([a,b])=>`<li><b>${a}:</b> ${b}</li>`).join("")}</ul>`:""}
+        <div class="tip">${r.tip}</div>
+      </div>
+      <div class="plato-pie">
+        <button class="ver" data-ver="${r.id}" aria-expanded="false">Ver receta</button>
+        ${veces
+          ? `<div class="contador"><button data-menos="${r.id}" aria-label="Sacar una tanda">−</button><span class="veces">${veces}×</span><button data-mas="${r.id}" aria-label="Sumar una tanda">+</button></div>`
+          : `<button class="sumar" data-mas="${r.id}">Sumar</button>`}
+      </div>`;
+    g.appendChild(el);
+  });
+
+  g.querySelectorAll("[data-ver]").forEach(b=>{
+    b.onclick=()=>{ const c=document.getElementById("rec-"+b.dataset.ver);
+      const ab=c.classList.toggle("abierta");
+      b.textContent=ab?"Ocultar receta":"Ver receta"; b.setAttribute("aria-expanded",ab); };
+  });
+  g.querySelectorAll("[data-mas]").forEach(b=>{
+    b.onclick=()=>{ const id=b.dataset.mas, r=R.find(x=>x.id===id);
+      sel[id]=(sel[id]||0)+1; almacen.guardar(); pintar();
+      toast(r.rinde>2?`Sumado · cubre ${cubre(r)} comidas`:"Sumado al plan"); };
+  });
+  g.querySelectorAll("[data-menos]").forEach(b=>{
+    b.onclick=()=>{ const id=b.dataset.menos; sel[id]--; if(sel[id]<=0) delete sel[id]; almacen.guardar(); pintar(); };
+  });
+}
+
+
+/* ===== Traducción a unidad de compra ===== */
+function unidadCompra(nombre, cant, unidad){
+  const e = COMPRA[nombre];
+  if(!e){
+    if(unidad==="g")  return cant>=1000 ? `${fmt(Math.ceil(cant/100)/10)} kg` : `${Math.ceil(cant/50)*50} g`;
+    if(unidad==="ml") return cant>=1000 ? `${fmt(Math.ceil(cant/100)/10)} L` : `${Math.ceil(cant/50)*50} ml`;
+    if(unidad==="lata") return `${Math.ceil(cant)} lata(s)`;
+    return null;
+  }
+  if(e.t==="kg"){
+    const kg = e.porU ? cant*e.porU : cant/1000;
+    return kg<1 ? `${Math.ceil(kg*1000/100)*100} g` : `${fmt(Math.ceil(kg*10)/10)} kg`;
+  }
+  if(e.t==="ml"){
+    const ml = cant*e.porU;
+    const n = Math.ceil(ml/e.paso);
+    return `${ml} ml · ${n} ${n===1?e.s:e.p}`;
+  }
+  const n = Math.ceil(cant/e.paso);
+  return `${n} ${n===1?e.s:e.p}`;
+}
+
+/* ===== Lista ===== */
+function juntarIngredientes(){
+  const acc={};
+  R.forEach(r=>{ const v=sel[r.id]; if(!v) return;
+    r.i.forEach(([n,c,u])=>{ const key=n+"|"+u;
+      if(!acc[key]) acc[key]={n,u,c:0,en:new Set()};
+      acc[key].c+=c*v; acc[key].en.add(r.n); });
+  });
+  return acc;
+}
+
+function bloqueRubros(items, prefijo){
+  const porRubro={};
+  items.forEach(it=>{ const meta=CAT[it.n]||{c:"Almacén"};
+    (porRubro[meta.c]=porRubro[meta.c]||[]).push({...it,frio:meta.f}); });
+  return ORDEN_RUBROS.filter(rb=>porRubro[rb]).map(rb=>{
+    const list=porRubro[rb].sort((a,b)=>a.n.localeCompare(b.n,'es'));
+    return `<section class="rubro">
+      <div class="rubro-cab"><h3>${rb}</h3><span class="cuenta">${list.length} ítem(s)</span></div>
+      ${list.map(it=>{
+        const k=it.n+"|"+it.u, id=prefijo+"-"+k.replace(/\W/g,""), on=tildes[k];
+        const uc = unidadCompra(it.n, it.c, it.u);
+        return `<div class="item${on?' listo':''}">
+          <input type="checkbox" id="${id}" data-k="${k}" ${on?"checked":""}>
+          <label for="${id}"><span class="nom">${it.n}</span><span class="med">${fmt(it.c)} ${it.u}</span>
+          ${uc?`<span class="compra-u">Comprá ${uc}</span>`:""}
+          <span class="en">${it.frio?"Va a la heladera · ":""}Para: ${[...it.en].join(", ")}</span></label></div>`;
+      }).join("")}</section>`;
+  }).join("");
+}
+
+function pintarLista(){
+  const cont=document.getElementById("lista");
+  const acc=juntarIngredientes(), items=Object.values(acc);
+
+  const nD=comidasTipo("desayuno"), nA=comidasTipo("almuerzo"), nC=comidasTipo("cena"), nM=comidasTipo("merienda");
+  const dias=Math.floor(Math.min(nD,nA,nC));
+  const porDiaK = promedio("desayuno","k")+promedio("almuerzo","k")+promedio("cena","k")
+                + (dias?Math.min(nM/dias,3):1)*promedio("merienda","k");
+  const porDiaP = promedio("desayuno","p")+promedio("almuerzo","p")+promedio("cena","p")
+                + (dias?Math.min(nM/dias,3):1)*promedio("merienda","p");
+
+  document.getElementById("lDias").textContent=dias;
+  document.getElementById("lComidas").textContent=fmt(totalComidas());
+  document.getElementById("lKcal").textContent=dias?Math.round(porDiaK):"—";
+  document.getElementById("lProt").textContent=dias?Math.round(porDiaP)+" g":"—";
+  document.getElementById("aguja").innerHTML=Array.from({length:14},(_,i)=>`<div class="seg${i<dias?' on':''}"></div>`).join("");
+
+  const av=document.getElementById("aviso");
+  if(!totalComidas()){
+    av.textContent="Todavía no elegiste nada. Un día completo son un desayuno, un almuerzo y una cena; la merienda va aparte. Los platos que rinden de más cuentan por todas las comidas que cubren.";
+  } else if(!dias){
+    const f=[]; if(nD<1)f.push("desayunos"); if(nA<1)f.push("almuerzos"); if(nC<1)f.push("cenas");
+    av.textContent=`Para cerrar el primer día completo te faltan ${f.join(" y ")}.`;
+  } else {
+    const ex=[];
+    if(nD>dias)ex.push(`${fmt(nD-dias)} de desayuno`);
+    if(nA>dias)ex.push(`${fmt(nA-dias)} de almuerzo`);
+    if(nC>dias)ex.push(`${fmt(nC-dias)} de cena`);
+    av.textContent=`${dias} día(s) cubiertos para los dos, más ${fmt(nM)} merienda(s)`+
+      (ex.length?`. Sobran comidas sueltas: ${ex.join(", ")}.`:".");
+  }
+
+  if(!items.length){
+    cont.innerHTML=`<div class="vacio"><strong>La lista está vacía</strong>
+      <p>Elegí platos en las otras pestañas y acá se van a juntar todos los ingredientes, sumados y ordenados por góndola.</p></div>`;
+    return;
+  }
+
+  const tramo=items.filter(it=>!(CAT[it.n]&&CAT[it.n].b));
+  const base =items.filter(it=>  CAT[it.n]&&CAT[it.n].b);
+  cont.innerHTML =
+    `<h2 class="bloque-tit">Compra del tramo</h2>
+     <p class="bloque-sub">Lo que hay que conseguir en el próximo pueblo. Cantidades ya sumadas entre todos los platos elegidos.</p>
+     ${bloqueRubros(tramo,"t")}` +
+    (base.length ? `<h2 class="bloque-tit">Sale de la despensa</h2>
+     <p class="bloque-sub">Esto ya lo llevás a bordo. Acá va cuánto vas a gastar, para que revises si alcanza antes de salir.</p>
+     ${bloqueRubros(base,"b")}` : "");
+
+  cont.querySelectorAll("input[type=checkbox]").forEach(ch=>{
+    ch.onchange=()=>{ tildes[ch.dataset.k]=ch.checked; almacen.guardar(); pintarLista(); };
+  });
+}
+
+function pintarKit(){
+  const c=document.getElementById("kit");
+  c.innerHTML=KIT.map(([n,cant],ix)=>{
+    const on=kitTildes[n];
+    return `<div class="item${on?' listo':''}">
+      <input type="checkbox" id="kit${ix}" data-n="${n}" ${on?"checked":""}>
+      <label for="kit${ix}"><span class="nom">${n}</span>${cant!=="—"?`<span class="med">${cant}</span>`:""}</label></div>`;
+  }).join("");
+  c.querySelectorAll("input").forEach(ch=>{
+    ch.onchange=()=>{ kitTildes[ch.dataset.n]=ch.checked; almacen.guardar(); pintarKit(); };
+  });
+}
+
+function textoLista(){
+  const items=Object.values(juntarIngredientes());
+  let out="LISTA DE COMPRAS · COCINA DE RUTA\n\nPLAN\n";
+  R.filter(r=>sel[r.id]).forEach(r=>{ out+=`- ${r.n} ×${sel[r.id]}${r.rinde>2?` (cubre ${cubre(r)*sel[r.id]} comidas)`:""}\n`; });
+  const sec=(titulo,lst)=>{
+    if(!lst.length) return "";
+    let s="\n"+titulo+"\n";
+    const porRubro={};
+    lst.forEach(it=>{ const m=CAT[it.n]||{c:"Almacén"}; (porRubro[m.c]=porRubro[m.c]||[]).push(it); });
+    ORDEN_RUBROS.filter(rb=>porRubro[rb]).forEach(rb=>{
+      s+="  "+rb.toUpperCase()+"\n";
+      porRubro[rb].sort((a,b)=>a.n.localeCompare(b.n,'es')).forEach(it=>{ s+=`    ${it.n} — ${fmt(it.c)} ${it.u}\n`; });
+    });
+    return s;
+  };
+  out+=sec("COMPRA DEL TRAMO", items.filter(it=>!(CAT[it.n]&&CAT[it.n].b)));
+  out+=sec("SALE DE LA DESPENSA", items.filter(it=>CAT[it.n]&&CAT[it.n].b));
+  return out;
+}
+
+
+/* ===== Modo mercado: qué sale con lo que hay ===== */
+function disponible(n){
+  if(tengo[n]) return true;
+  const meta = CAT[n];
+  return !!(asumeBase && meta && meta.b);
+}
+function pintarSelector(){
+  const cont=document.getElementById("ingSelector");
+  const usados=new Set(); R.forEach(r=>r.i.forEach(([n])=>usados.add(n)));
+  const porRubro={};
+  [...usados].forEach(n=>{ const meta=CAT[n]; if(asumeBase&&meta.b) return;
+    (porRubro[meta.c]=porRubro[meta.c]||[]).push(n); });
+  cont.innerHTML=ORDEN_RUBROS.filter(rb=>porRubro[rb]).map(rb=>
+    `<div class="merc-rubro">${rb}</div><div class="ing-grid">`+
+    porRubro[rb].sort((a,b)=>a.localeCompare(b,'es')).map(n=>
+      `<button class="ing-chip" data-i="${n}" aria-pressed="${!!tengo[n]}">${n}</button>`).join("")+
+    `</div>`).join("");
+  cont.querySelectorAll(".ing-chip").forEach(ch=>{
+    ch.onclick=()=>{ const n=ch.dataset.i; tengo[n]=!tengo[n]; almacen.guardar();
+      ch.setAttribute("aria-pressed",!!tengo[n]); pintarResultados(); pintarNav(); };
+  });
+}
+function pintarResultados(){
+  const cont=document.getElementById("resultados");
+  const marcados=Object.values(tengo).filter(Boolean).length;
+  if(!marcados){
+    cont.innerHTML=`<div class="vacio"><strong>Elegí lo que tenés</strong>
+      <p>Tildá arriba los ingredientes que conseguiste y acá aparecen los platos que salen, ordenados por cuánto te falta.</p></div>`;
+    return;
+  }
+  const evaluados=R.map(r=>{
+    const faltan=r.i.map(([n])=>n).filter(n=>!disponible(n));
+    return {r,faltan};
+  }).filter(x=>x.faltan.length<=2)
+    .sort((a,b)=> a.faltan.length-b.faltan.length || b.r.p-a.r.p);
+
+  if(!evaluados.length){
+    cont.innerHTML=`<div class="vacio"><strong>Todavía no alcanza</strong>
+      <p>Con eso no llega ningún plato a dos ingredientes de distancia. Sumá algo más de la lista de arriba.</p></div>`;
+    return;
+  }
+  cont.innerHTML=evaluados.slice(0,24).map(({r,faltan})=>{
+    const cambios=faltan.map(n=>{
+      const s=(r.sust||[]).find(([a])=>a===n);
+      return s?`<b>${n}</b>: ${s[1]}`:null;
+    }).filter(Boolean);
+    const veces=sel[r.id]||0;
+    return `<div class="res${faltan.length?'':' full'}">
+      <div class="info">
+        <h4>${r.n}</h4>
+        <div class="meta">${TIPOS.find(t=>t.k===r.t).l.slice(0,-1)} · ${r.min} min · ${r.p} g de proteína · ${AGUA_TXT[r.agua]}</div>
+        ${faltan.length?`<div class="falta">Falta: <b>${faltan.join(", ")}</b></div>`:`<div class="falta">Sale completo con lo que tenés.</div>`}
+        ${cambios.length?`<div class="cambio">${cambios.join(" · ")}</div>`:""}
+      </div>
+      ${veces?`<div class="contador"><button data-mmenos="${r.id}">−</button><span class="veces">${veces}×</span><button data-mmas="${r.id}">+</button></div>`
+             :`<button class="sumar" data-mmas="${r.id}">Sumar</button>`}
+    </div>`;
+  }).join("");
+  cont.querySelectorAll("[data-mmas]").forEach(b=>{
+    b.onclick=()=>{ sel[b.dataset.mmas]=(sel[b.dataset.mmas]||0)+1; almacen.guardar(); pintarNav(); pintarResultados(); toast("Sumado al plan"); };
+  });
+  cont.querySelectorAll("[data-mmenos]").forEach(b=>{
+    b.onclick=()=>{ const id=b.dataset.mmenos; sel[id]--; if(sel[id]<=0) delete sel[id]; almacen.guardar(); pintarNav(); pintarResultados(); };
+  });
+}
+
+/* ===== Utilidades ===== */
+let tId;
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("ver");
+  clearTimeout(tId); tId=setTimeout(()=>t.classList.remove("ver"),1700);
+}
+document.getElementById("btnCopiar").onclick=async()=>{
+  const txt=textoLista();
+  try{ await navigator.clipboard.writeText(txt); toast("Lista copiada"); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast("Lista copiada"); }catch(_){ toast("No se pudo copiar acá"); } ta.remove(); }
+};
+document.getElementById("btnCompartir").onclick=async()=>{
+  const txt=textoLista();
+  if(navigator.share){
+    try{ await navigator.share({title:"Lista de compras · Cocina de Ruta", text:txt}); }
+    catch(e){ if(e && e.name!=="AbortError") toast("No se pudo compartir"); }
+  } else {
+    try{ await navigator.clipboard.writeText(txt); toast("Copiada: pegala donde quieras"); }
+    catch(e){ toast("Compartir no está disponible acá"); }
+  }
+};
+document.getElementById("asumeBase").onchange=(e)=>{ asumeBase=e.target.checked; pintarSelector(); pintarResultados(); };
+document.getElementById("btnImprimir").onclick=()=>window.print();
+document.getElementById("btnVaciar").onclick=()=>{
+  if(!totalComidas()) return toast("Ya está vacía");
+  sel={}; tildes={}; almacen.guardar(); pintar(); toast("Plan vaciado");
+};
+document.querySelectorAll("#filtros .chip").forEach(ch=>{
+  ch.onclick=()=>{ const f=ch.dataset.f;
+    if(filtros.has(f)) filtros.delete(f); else filtros.add(f);
+    ch.setAttribute("aria-pressed",filtros.has(f)); pintarRecetas(); };
+});
+
+function pintar(){
+  pintarNav();
+  const esLista=vista==="lista", esMerc=vista==="mercado";
+  document.getElementById("panelRecetas").classList.toggle("oculto",esLista||esMerc);
+  document.getElementById("panelLista").classList.toggle("oculto",!esLista);
+  document.getElementById("panelMercado").classList.toggle("oculto",!esMerc);
+  if(esLista){ pintarLista(); pintarKit(); }
+  else if(esMerc){ pintarSelector(); pintarResultados(); }
+  else pintarRecetas();
+}
+(async function init(){
+  const g=await almacen.leer();
+  if(g){ sel=g.sel||{}; tildes=g.tildes||{}; kitTildes=g.kitTildes||{}; tengo=g.tengo||{}; }
+  pintar();
+})();
+</script>
+</body>
+</html>
