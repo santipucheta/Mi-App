@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e2a32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Vida de Ruta — La Samineta</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#f4f4f2; --card:#fff; --line:#e2e8f0; --line2:#f0f0f0;
+  --tx:#1e293b; --tx2:#64748b; --tx3:#94a3b8;
+  --nav:#1e2a32; --nav2:#37474f; --amber:#f9a825;
+  --blue:#1565c0; --green:#2e7d32; --purple:#7b1fa2; --red:#c62828; --orange:#e65100; --teal:#00838f;
+  --ok:#2e7d32; --warn:#e65100; --bad:#c62828;
+  --sh:0 1px 3px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.45}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
+button,input,select,textarea{font-family:inherit;font-size:16px}
+input,select,textarea{background:#fff;color:var(--tx);border:1px solid #cbd5e1;border-radius:8px;padding:10px 11px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:-1px}
+label{display:block;font-size:11.5px;color:var(--tx2);margin:0 0 4px 2px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+a{color:var(--blue)}
+
+/* ---------- HEADER ---------- */
+header{position:sticky;top:0;z-index:60;background:var(--nav);color:#fff;padding:calc(8px + env(safe-area-inset-top)) 0 0}
+.hrow{display:flex;align-items:center;gap:10px;padding:0 14px 8px}
+.hrow h1{font-size:15px;white-space:nowrap}
+.hrow .meta{font-size:11.5px;color:#b0bec5;margin-left:auto;text-align:right;line-height:1.3}
+.hrow .meta b{color:#fff;font-size:13px;display:block}
+.sync{font-size:10px;font-weight:800;padding:4px 8px;border-radius:20px;border:1px solid #546e7a;color:#b0bec5;white-space:nowrap}
+.sync.on{color:#a5d6a7;border-color:#4caf50}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 12px 9px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:var(--nav2);color:#fff;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13.5px;white-space:nowrap;font-weight:600}
+.tabs button.on{background:var(--amber);color:var(--nav);font-weight:800}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:1100px;margin:0 auto;padding:16px 12px 60px}
+.view{display:none}
+.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.card>h3{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card>h3 .r{margin-left:auto;font-size:12px;color:var(--tx2);font-weight:600}
+.sec-t{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx2);font-weight:800;margin:20px 0 9px 3px}
+.muted{color:var(--tx2);font-size:13px}
+.hint{color:var(--tx2);font-size:12px;line-height:1.5;margin-top:8px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.mt{margin-top:10px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.kpi{background:#fff;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:12px;padding:14px 16px;box-shadow:var(--sh)}
+.kpi.ok{border-top-color:var(--ok)} .kpi.warn{border-top-color:var(--warn)} .kpi.bad{border-top-color:var(--bad)}
+.kpi.pu{border-top-color:var(--purple)} .kpi.te{border-top-color:var(--teal)}
+.kpi .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);font-weight:800}
+.kpi .v{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:5px 0 3px;color:var(--blue)}
+.kpi .v small{font-size:14px;font-weight:700;color:var(--tx2)}
+.kpi.ok .v{color:var(--ok)} .kpi.warn .v{color:var(--warn)} .kpi.bad .v{color:var(--bad)}
+.kpi.pu .v{color:var(--purple)} .kpi.te .v{color:var(--teal)}
+.kpi .d{font-size:12px;color:var(--tx2);line-height:1.4}
+.kpi.wide{grid-column:1/-1}
+.hero{background:linear-gradient(135deg,#1565c0,#1e3a5f);color:#fff;border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--sh)}
+.hero .big{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.hero .sub{font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.8;font-weight:700;margin-top:2px}
+.bar{height:9px;background:#eceff1;border-radius:6px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--blue);transition:width .3s}
+
+/* ---------- LISTAS ---------- */
+.li{display:flex;gap:11px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line2)}
+.li:last-child{border-bottom:none}
+.li .ic{width:34px;height:34px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.li .m{flex:1;min-width:0}
+.li .m b{display:block;font-size:14px;font-weight:700}
+.li .m span{font-size:11.5px;color:var(--tx2)}
+.li .a{text-align:right;font-weight:800;font-size:14.5px;white-space:nowrap}
+.li .a span{display:block;font-size:11px;color:var(--tx3);font-weight:600}
+.x{background:none;border:none;color:var(--tx3);font-size:16px;cursor:pointer;padding:4px;width:auto}
+
+/* ---------- BOTONES ---------- */
+.btn{background:#f1f5f9;color:var(--tx);border:1px solid #cbd5e1;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.p{background:var(--green);border-color:var(--green);color:#fff}
+.btn.b{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+.btn.w{width:100%}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(min-width:640px){.chips{grid-template-columns:repeat(8,1fr)}}
+.chip{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 3px;cursor:pointer;text-align:center;box-shadow:var(--sh)}
+.chip:active{background:#fff8e1;border-color:var(--amber)}
+.chip .e{font-size:21px;display:block;line-height:1.15}
+.chip .t{font-size:10px;font-weight:700;color:var(--tx2);margin-top:2px}
+.seg{display:flex;background:#eceff1;border-radius:9px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1;min-width:70px;background:none;border:none;color:var(--tx2);padding:8px 5px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
+.seg button.on{background:#fff;color:var(--tx);box-shadow:var(--sh)}
+
+/* ---------- TABLA ---------- */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2);padding:7px 6px;border-bottom:2px solid var(--line);font-weight:800}
+td{padding:9px 6px;border-bottom:1px solid var(--line2)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--bad)}.neg{color:var(--ok)}
+
+/* ---------- MISC ---------- */
+.tag{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;background:#eceff1;color:var(--tx2)}
+.tag.ok{background:#e8f5e9;color:var(--ok)}.tag.warn{background:#fff3e0;color:var(--warn)}.tag.bad{background:#ffebee;color:var(--bad)}
+.tag.b{background:#e3f2fd;color:var(--blue)}.tag.pu{background:#f3e5f5;color:var(--purple)}
+.note{font-size:12.5px;color:#555;background:#fffde7;border-left:3px solid var(--amber);padding:7px 11px;margin-top:9px;border-radius:0 7px 7px 0}
+.banner{border-radius:10px;padding:12px 14px;font-size:13.5px;margin-bottom:14px;border-left:4px solid}
+.banner.r{background:#ffebee;border-color:var(--bad);color:#7f1d1d}
+.banner.w{background:#fff8e1;border-color:var(--amber);color:#78350f}
+.banner.i{background:#e3f2fd;border-color:var(--blue);color:#0d47a1}
+.banner.g{background:#e8f5e9;border-color:var(--ok);color:#14532d}
+#map{height:420px;border-radius:12px;border:1px solid var(--line)}
+.ph{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
+.ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+.ph .add{aspect-ratio:1;border:2px dashed #cbd5e1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--tx3);cursor:pointer;background:#fff}
+.mod{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:12px}
+.mod.on{display:flex}
+.mod .in{background:#fff;border-radius:14px;padding:20px;width:min(520px,96vw);max-height:92vh;overflow:auto}
+.mod h2{font-size:17px;margin-bottom:14px}
+/* grilla mensual de hábitos (portada del panel Ruta Sur) */
+.grilla{display:grid;grid-template-columns:150px repeat(var(--cols),16px);gap:2px;min-width:min-content}
+.g-esq{position:sticky;left:0;background:#fff;z-index:2}
+.g-dia{font-size:9px;color:var(--tx3);text-align:center;font-weight:800;padding-bottom:2px}
+.g-dia.hoy{color:var(--blue)}
+.g-nom{position:sticky;left:0;background:#fff;z-index:2;font-size:11.5px;display:flex;align-items:center;
+ gap:4px;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:16px}
+.celda{height:16px;border-radius:3px;background:#eceff1;border:1px solid var(--line);cursor:pointer}
+.celda.on{background:var(--ok);border-color:var(--ok)}
+.celda.futuro{opacity:.35;cursor:default}
+@media(max-width:520px){.grilla{grid-template-columns:112px repeat(var(--cols),15px)}}
+.wk .c.on{background:var(--ok)}
+.wk .c.fu{background:#fafafa;cursor:default}
+.score{display:flex;gap:3px}
+.score i{width:7px;height:7px;border-radius:50%;background:#dde3ea}
+.score i.f{background:var(--blue)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>🚙 Vida de Ruta</h1>
+    <div class="sync" id="sync">·</div>
+    <div class="meta"><b id="hdDay">—</b><span id="hdSub"></span></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<div class="wrap">
+  <div class="view on" id="v-tablero"></div>
+  <div class="view" id="v-hoy"></div>
+  <div class="view" id="v-ruta"></div>
+  <div class="view" id="v-gastos"></div>
+  <div class="view" id="v-ingresos"></div>
+  <div class="view" id="v-tramites"></div>
+  <div class="view" id="v-cocina"></div>
+  <div class="view" id="v-rutinas"></div>
+  <div class="view" id="v-samineta"></div>
+  <div class="view" id="v-camioneta"></div>
+  <div class="view" id="v-guitarra"></div>
+  <div class="view" id="v-ajustes"></div>
+</div>
+
+<div class="mod" id="mod"><div class="in" id="modIn"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" onerror="window.__noLeaflet=1"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js" onerror="window.__noFb=1"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js" onerror="window.__noFb=1"></script>
+<script>
+/* ==========================================================================
+   VIDA DE RUTA — La Samineta   ·   fase DO + CHECK
+   El plan (mapa.html / doc `estado`) es BASELINE inmutable y de solo lectura.
+   Todo lo real se escribe en el doc `vida_ruta`. localStorage es la fuente de
+   verdad de la UI; Firestore sincroniza cuando hay señal.
+   ========================================================================== */
+
+const FB={apiKey:"AIzaSyBZHqyDLW34ALEmWi4NI6kTt4YSXYDPcRw",authDomain:"f150-9a6e4.firebaseapp.com",
+ projectId:"f150-9a6e4",storageBucket:"f150-9a6e4.firebasestorage.app",messagingSenderId:"974737504661",
+ appId:"1:974737504661:web:abaffde9d112e91654de9c"};
+const COL="mapa_ruta",DOC_PLAN="estado",DOC_REAL="vida_ruta",LS_PLAN="vr_plan_v1",LS_REAL="vr_real_v1";
+const ROAD_FACTOR=1.3,KM_PER_MI=1.609344,L_PER_GAL=3.785411784;
+
+const TABS=[
+ ["tablero","🎛️","Tablero"],["hoy","📍","Hoy"],["ruta","🗺️","Ruta"],["gastos","💰","Gastos"],
+ ["ingresos","💵","Ingresos"],["tramites","📄","Trámites"],["cocina","🍳","Cocina"],
+ ["rutinas","🔁","Rutinas"],["samineta","📸","Samineta"],["camioneta","🚙","Camioneta"],
+ ["guitarra","🎸","Guitarra"],["ajustes","⚙️",""]
+];
+
+const REGION_ORDER=["EE.UU.","México","Centroamérica","Sudamérica"];
+const REGION_COLORS={"EE.UU.":"#1565c0","México":"#2e7d32","Centroamérica":"#f9a825","Sudamérica":"#7b1fa2"};
+const REGION_BY_COUNTRY={"Estados Unidos":"EE.UU.","México":"México","Belice":"Centroamérica","Guatemala":"Centroamérica",
+ "El Salvador":"Centroamérica","Honduras":"Centroamérica","Nicaragua":"Centroamérica","Costa Rica":"Centroamérica",
+ "Panamá":"Centroamérica","Colombia":"Sudamérica","Ecuador":"Sudamérica","Perú":"Sudamérica","Bolivia":"Sudamérica","Argentina":"Sudamérica"};
+const COUNTRY_PATTERNS=[
+ {country:"México",re:/méxico|mexicali|tecate|,\s*(Son|BCS|BC|Sin|Nay|Jal|Qro|Chis|Pue)\.?(?=\s|—|$)/i},
+ {country:"Belice",re:/belice|belize/i},{country:"Guatemala",re:/guatemala/i},{country:"El Salvador",re:/el salvador/i},
+ {country:"Honduras",re:/honduras/i},{country:"Nicaragua",re:/nicaragua/i},{country:"Costa Rica",re:/costa rica|,\s*CR(?=\s|—|$)/i},
+ {country:"Panamá",re:/panamá|panama/i},{country:"Colombia",re:/colombia/i},{country:"Ecuador",re:/ecuador/i},
+ {country:"Perú",re:/per[uú]/i},{country:"Bolivia",re:/bolivia/i},{country:"Argentina",re:/argentina/i}];
+const CUR_BY_COUNTRY={"Estados Unidos":"USD","México":"MXN","Belice":"BZD","Guatemala":"GTQ","El Salvador":"USD",
+ "Honduras":"HNL","Nicaragua":"NIO","Costa Rica":"CRC","Panamá":"USD","Colombia":"COP","Ecuador":"USD",
+ "Perú":"PEN","Bolivia":"BOB","Argentina":"ARS"};
+const GAL_COUNTRIES=["Estados Unidos"];
+// ⚠️ Semilla estimada. Cada moneda queda "sin confirmar" hasta que la toques.
+const FX_SEED={USD:1,MXN:18.5,BZD:2.0,GTQ:7.7,HNL:26,NIO:37,CRC:510,COP:4000,PEN:3.6,BOB:6.9,ARS:1400};
+
+const CATS={nafta:{t:"Nafta",e:"⛽"},comida:{t:"Comida",e:"🍽️"},dormir:{t:"Dormir",e:"🛏️"},
+ entretenimiento:{t:"Paseos",e:"🎟️"},auto:{t:"Auto",e:"🔧"},tramites:{t:"Trámites",e:"📄"},
+ peajes:{t:"Peajes",e:"🛣️"},otros:{t:"Otros",e:"🛒"}};
+const CORRIENTE=["nafta","comida","dormir","otros"];
+
+const GATES=[
+ {id:"mex",t:"Cruce a México (Tecate/Mexicali)",m:/tecate|mexicali/i,note:"FMM + TIP Banjercito + certificado de salud de Samy emitido pocos días antes."},
+ {id:"tip",t:"Cancelar el TIP mexicano en Chetumal",m:/chetumal/i,note:"Si no lo cancelás perdés el depósito de USD 400 y quedás marcado para futuras entradas."},
+ {id:"darien",t:"Embarque del Darién (Colón → Cartagena)",m:/col[oó]n/i,note:"RoRo. Auto parado 10-14 días. Confirmar antes si aceptan las garrafas de gas (FineFlame / Vevor)."},
+ {id:"villazon",t:"Entrada del auto a Argentina (Villazón)",m:/villaz[oó]n/i,note:"Ver la ficha completa en Trámites. Necesita certificado consular de residencia en el exterior tramitado ANTES de salir."}
+];
+
+/* ---- SEMILLAS DE MÓDULOS NUEVOS ---------------------------------------- */
+
+// Ideas de ingreso. `legal` es lo más importante: trabajar por dinero con visa
+// de turista es ilegal en prácticamente toda la ruta. Ver nota en la pestaña.
+const IDEAS_SEED=[
+ {id:"i1",t:"Trabajo remoto para clientes de EEUU/Argentina",cat:"remoto",pot:4,esf:3,riesgo:1,cap:0,st:"idea",
+  note:"El camino menos riesgoso: cliente afuera, cobro en cuenta afuera. Es lo que hacen todos los overlanders que se financian el viaje. Ingeniería, cálculo estructural, dibujo, automatizaciones, planillas. Requiere internet estable → acá se justifica el Starlink Mini."},
+ {id:"i2",t:"Artesanías de Lula vendidas online (Etsy/Instagram) y enviadas",cat:"online",pot:3,esf:3,riesgo:1,cap:1,st:"idea",
+  note:"Vender ONLINE a compradores de EEUU esquiva el problema legal de vender en la calle. El costo real es el envío desde Latinoamérica: conviene juntar pedidos y despachar desde ciudades grandes."},
+ {id:"i3",t:"Artesanías en ferias y mercados de ruta",cat:"presencial",pot:2,esf:3,riesgo:4,cap:1,st:"idea",
+  note:"Es lo más lindo y lo más riesgoso: vender con visa de turista es trabajo informal. En México y Centroamérica una multa migratoria puede complicar el TIP del auto. Si se hace, que sea en ferias hippies/de artesanos donde es práctica tolerada, y sin puesto fijo."},
+ {id:"i4",t:"Contenido: Instagram/YouTube de La Samineta",cat:"contenido",pot:3,esf:4,riesgo:1,cap:0,st:"idea",
+  note:"No monetiza rápido, pero es el activo que habilita todo lo demás (marcas, afiliados, el libro/curso después). El ángulo diferencial son los NÚMEROS REALES del viaje, que nadie publica."},
+ {id:"i5",t:"Marcas / canje con equipamiento overland",cat:"contenido",pot:2,esf:2,riesgo:1,cap:0,st:"idea",
+  note:"Antes que plata, canje: heladera, paneles, cubiertas, apps de rutas. Baja el gasto, que a efectos del runway es lo mismo que ingreso. Empezar a escribirles recién con ~5k seguidores reales."},
+ {id:"i6",t:"Cine en el camper (proyector) a la gorra",cat:"presencial",pot:1,esf:2,riesgo:3,cap:2,st:"idea",
+  note:"Divertidísimo y buen contenido, pero como negocio no cierra: depende de juntar gente, del clima y de que haya con qué pagar. Tratarlo como generador de contenido y de amigos, no de ingresos."},
+ {id:"i7",t:"Comida argentina en hostels / campings (asado, empanadas, alfajores)",cat:"presencial",pot:2,esf:4,riesgo:3,cap:2,st:"idea",
+  note:"Funciona muy bien en hostels de mochileros (Guatemala, Nicaragua, Colombia, Perú). Ojo con habilitación sanitaria: hacerlo como 'cena compartida a la gorra' en un hostel es tolerado; vender en la calle no."},
+ {id:"i8",t:"Clases de inglés/español online",cat:"remoto",pot:2,esf:3,riesgo:1,cap:0,st:"idea",
+  note:"Ingreso chico pero muy estable y de horario flexible. Sirve como piso: cubre la comida de la semana."},
+ {id:"i9",t:"Fotos y video para hostels, campings y operadores turísticos",cat:"presencial",pot:2,esf:2,riesgo:3,cap:0,st:"idea",
+  note:"Muy frecuente entre viajeros: filmás el hostel, cobrás en noches gratis + algo de plata. El canje por alojamiento tiene cero riesgo legal, la plata sí."},
+ {id:"i10",t:"Vender equipo del camper al llegar (o en ruta)",cat:"otro",pot:3,esf:1,riesgo:1,cap:0,st:"idea",
+  note:"El colchón real de emergencia: heladera Dometic, EcoFlow, paneles, proyector, drone. En Argentina valen bastante más que en EEUU. No es un plan de ingresos, es el plan B financiero."},
+ {id:"i11",t:"Mecánica / soldadura / arreglos a otros overlanders",cat:"presencial",pot:1,esf:3,riesgo:2,cap:1,st:"idea",
+  note:"En los puntos de encuentro (Baja, Antigua, Cartagena, Uyuni) siempre hay alguien varado. Es más red de contactos que negocio."},
+ {id:"i12",t:"Alojar el viaje: Patreon / suscripción de amigos y familia",cat:"contenido",pot:1,esf:2,riesgo:1,cap:0,st:"idea",
+  note:"Suena raro pero funciona: la gente que te sigue quiere participar. Un aporte chico mensual a cambio de la bitácora larga y las fotos en alta."}
+];
+
+/* ---- RUTINAS (portado del panel "Ruta Sur" de Martín y Lula) ------------
+   Se mantiene el modelo original: hábitos por persona, tareas con dueño
+   rotativo/fijo/libre, puntos y reparto semanal. Lo que cambia es dónde vive
+   el dato: en el artifact usaba window.storage (un solo dispositivo); acá va
+   a Firestore, que es lo que un sistema de a dos necesita para no discutir
+   quién marcó qué. */
+const PERSONAS={martin:{nombre:"Martín",color:"#e65100",corto:"M"},lula:{nombre:"Lula",color:"#00838f",corto:"L"}};
+const TCATS={camper:"Camper",viaje:"Viaje y F-150",ruta:"En ruta",samy:"Samy"};
+const DIAS_L=["L","M","X","J","V","S","D"];
+const ANCLA=new Date(2026,0,5);   // lunes de referencia para la rotación
+
+const HABITOS_SEED=[
+ {id:"h_agua",e:"💧",n:"Tomar 3 L de agua",q:"ambos"},
+ {id:"h_entrenar",e:"🏋️",n:"Entrenar o caminar fuerte",q:"ambos"},
+ {id:"h_dieta",e:"🥩",n:"Cumplir la dieta",q:"ambos"},
+ {id:"h_leer",e:"📖",n:"Leer 15 minutos",q:"ambos"},
+ {id:"h_dormir",e:"😴",n:"Dormir antes de 23:30",q:"ambos"},
+ {id:"h_pantallas",e:"📵",n:"Sin pantallas 30 min antes de dormir",q:"ambos"},
+ {id:"h_estirar",e:"🧘",n:"Estirar después de manejar",q:"ambos"},
+ {id:"h_f150",e:"🚗",n:"Avanzar 1 tarea de la F-150 / camper",q:"martin"},
+ {id:"h_tramite",e:"📄",n:"1 trámite o papel del viaje",q:"martin"},
+ {id:"h_chequeo",e:"🚙",n:"Chequeo pre-marcha",q:"martin"},
+ {id:"h_guitarra",e:"🎸",n:"Guitarra 15 minutos",q:"martin"},
+ {id:"h_mate",e:"🧉",n:"Mate sin pantallas",q:"juntos"},
+ {id:"h_ruta",e:"🗺️",n:"30 min de planificación del tramo siguiente",q:"juntos"},
+ {id:"h_gastos",e:"💸",n:"Cargar los gastos del día",q:"juntos"},
+ {id:"h_diario",e:"📓",n:"Diario y fotos del día",q:"juntos"}
+];
+
+const TAREAS_SEED=[
+ {id:"t_cocinar",e:"🍳",n:"Cocinar",cat:"camper",tipo:"rotativa",off:0,cada:1,pts:2},
+ {id:"t_platos",e:"🍽️",n:"Lavar los platos",cat:"camper",tipo:"rotativa",off:1,cada:1,pts:1},
+ {id:"t_ropa",e:"🧺",n:"Laundry y doblar",cat:"camper",tipo:"rotativa",off:0,cada:7,pts:2},
+ {id:"t_camper_fondo",e:"🧽",n:"Limpieza a fondo del camper",cat:"camper",tipo:"rotativa",off:1,cada:7,pts:3},
+ {id:"t_sabanas",e:"🛏️",n:"Cambiar sábanas y toallas",cat:"camper",tipo:"rotativa",off:1,cada:14,pts:2},
+ {id:"t_basura",e:"🗑️",n:"Sacar la basura",cat:"camper",tipo:"fija",d:"martin",cada:2,pts:1},
+ {id:"t_super",e:"🛒",n:"Compras del súper (ver lista en Cocina)",cat:"camper",tipo:"fija",d:"lula",cada:5,pts:2},
+ {id:"t_orden",e:"🧹",n:"Orden general de 10 min",cat:"camper",tipo:"libre",cada:1,pts:1},
+ {id:"t_lavarf150",e:"🚿",n:"Lavar la F-150",cat:"viaje",tipo:"libre",cada:14,pts:2},
+ {id:"t_papeles",e:"🛂",n:"Papeles del próximo cruce",cat:"viaje",tipo:"fija",d:"lula",cada:7,pts:2},
+ {id:"t_mecanica",e:"🔧",n:"Chequeo mecánico semanal",cat:"viaje",tipo:"fija",d:"martin",cada:7,pts:3},
+ {id:"t_backup",e:"💾",n:"Backup de fotos y export de la app",cat:"viaje",tipo:"libre",cada:7,pts:2},
+ {id:"r_manejar",e:"🛞",n:"Manejar el tramo",cat:"ruta",tipo:"rotativa",off:0,cada:1,pts:3},
+ {id:"r_navegar",e:"🗺️",n:"Navegar y buscar dónde dormir",cat:"ruta",tipo:"rotativa",off:1,cada:1,pts:2},
+ {id:"r_nafta",e:"⛽",n:"Combustible y registro de consumo",cat:"ruta",tipo:"fija",d:"martin",cada:2,pts:1},
+ {id:"r_agua",e:"💧",n:"Cargar agua potable",cat:"ruta",tipo:"libre",cada:2,pts:1},
+ {id:"r_hielo",e:"🧊",n:"Hielo y heladera",cat:"ruta",tipo:"libre",cada:2,pts:1},
+ {id:"r_camper",e:"🧹",n:"Ordenar la camper antes de arrancar",cat:"ruta",tipo:"libre",cada:1,pts:1},
+ {id:"r_sim",e:"📶",n:"Chip / eSIM del país",cat:"ruta",tipo:"libre",cada:30,pts:1},
+ {id:"t_samy_comida",e:"🦴",n:"Comida y agua de Samy",cat:"samy",tipo:"rotativa",off:0,cada:1,pts:1},
+ {id:"t_samy_paseo",e:"🐕",n:"Paseo largo de Samy",cat:"samy",tipo:"rotativa",off:1,cada:1,pts:2},
+ {id:"t_samy_corto",e:"🚶",n:"Paseo corto de Samy",cat:"samy",tipo:"libre",cada:1,pts:1},
+ {id:"t_samy_cepillo",e:"🪮",n:"Cepillar a Samy",cat:"samy",tipo:"rotativa",off:0,cada:3,pts:1},
+ {id:"t_samy_garrapatas",e:"🔍",n:"Revisar garrapatas y patas",cat:"samy",tipo:"libre",cada:2,pts:1}
+];
+
+/* ---- CHECKLIST SEMANAL DE LA F-150 --------------------------------------
+   Base: el brief que armó Martín para el Coyote 5.0 Gen 3 + Veepeak BLE+.
+   Los ítems marcados con `v:true` son los que NO hay que dar por buenos: son
+   datos que cambian según la camioneta concreta y que conviene leer del propio
+   vehículo antes de salir. Están explicados en la nota de cada uno.          */
+const CHK_SECS=[
+ {n:"1", t:"Diagnóstico OBD2", s:"Veepeak BLE+ · Car Scanner o FORScan Lite", items:[
+  {id:"c11",t:"Escaneo de códigos DTC",d:"PCM (motor) y TCM (caja). Anotá los pendientes ANTES de borrar nada: un código borrado sin leer es información perdida."},
+  {id:"c12",t:"Parámetros en vivo verificados",d:"TFT, ECT, OAR y presión de riel con el motor en marcha. Ver la tabla de rangos abajo."},
+  {id:"c13",t:"Módulos de carrocería y 4x4",d:"El Veepeak BLE+ NO soporta MS-CAN, que es donde Ford cuelga varios módulos de carrocería. Si el TCCM del 4x4 no aparece, no es que esté roto: es el adaptador.",v:true}
+ ]},
+ {n:"2", t:"Bajo el capó", s:"Motor frío y en plano", items:[
+  {id:"c21",t:"Nivel de aceite de motor",d:"Esperar 15-20 min tras apagar. VERIFICAR EN TU CAMIONETA: las fuentes online se contradicen entre 7,7 qt / 5W-20 y 8,8 qt / 5W-30 para el 5.0 Gen 3. La viscosidad correcta está estampada en la tapa de llenado de aceite y en el manual. Anotala en el celular: se la vas a tener que dictar a un mecánico en México.",v:true},
+  {id:"c22",t:"Válvula PCV y mangueras de ventilación",d:"Que la bolilla interna suene libre al sacudirla."},
+  {id:"c23",t:"Nivel de refrigerante",d:"En frío, en la marca de llenado. Buscar costras de fuga debajo de la bomba de agua."},
+  {id:"c24",t:"Doble correa de accesorios",d:"La serpentina principal y la correa elástica del compresor de A/C, que en el Coyote va aparte."},
+  {id:"c25",t:"Filtro de aire",d:"Sacudir el polvo después de cada tramo de ripio o calamina. Filtro K&N: limpieza cada ~15.000 km."},
+  {id:"c26",t:"Batería y sensor BMS",d:"Bornes firmes y sin sulfato. Que ningún accesorio del camper esté conectado ANTES del sensor de masa, o el sistema calcula mal la carga."}
+ ]},
+ {n:"3", t:"Tren rodante y chasis", s:"Lo que se rompe en ripio", items:[
+  {id:"c31",t:"Mangueras de vacío IWE (cubos delanteros)",d:"Punto débil conocido de la F-150. Que no estén rozando ni descalzadas."},
+  {id:"c32",t:"Test de 4x4 y bloqueo de diferencial",d:"Enganchar 4H en tierra. El bloqueo electrónico es OPCIONAL en la XLT: confirmá si tu camioneta lo tiene antes de buscar un testigo que quizá no exista.",v:true},
+  {id:"c33",t:"Presión de los 4 neumáticos + auxilio",d:"El valor manda la placa del marco de la puerta, NO un número de internet. Y con el camper cargado el eje trasero pide más presión que la placa de fábrica. El auxilio tiene su propia especificación: miralo en su etiqueta.",v:true},
+  {id:"c34",t:"Malacate y cable del auxilio",d:"AGREGADO. El mecanismo que baja la rueda de auxilio bajo el chasis se agarrota con barro y sal. Bajala y subila cada tanto: descubrir que no baja con una goma pinchada en Bolivia es el peor momento posible."},
+  {id:"c35",t:"Freno de estacionamiento eléctrico (botón)",d:"Confirmado: es de botón. Accionalo y liberalo desde la cabina y escuchá que los servomotores traseros actúen sin chillidos. Ojo con esto en el embarque del Darién: el auto viaja en el barco y conviene dejarlo en P sin EPB puesto para que no quede trabado si se descarga la batería."},
+  {id:"c36",t:"Espesor de pastillas de freno",d:"AGREGADO. El peso del camper las gasta bastante más rápido que el uso normal, y en los Andes se van en bajadas largas."},
+  {id:"c37",t:"Inspección de bajos y cardán",d:"Piedras o ramas encajadas, fuelles de semiejes intactos."},
+  {id:"c38",t:"Manchas en el piso",d:"AGREGADO. Antes de arrancar, mirar dónde durmió la camioneta. Una mancha nueva es el aviso más barato que vas a tener."},
+  {id:"c39",t:"Nivel de limpiaparabrisas",d:"Al tope. En ruta de tierra con camiones adelante se vacía en un día."}
+ ]}
+];
+const CHK_PIDS=[
+ ["OAR","Octane Adjust Ratio","−1,0 óptimo","Entre 0 y +1: nafta de bajo octanaje. El motor atrasa el encendido para protegerse."],
+ ["Knock Retard","Detonación","0° a −2° en aceleración","Menos de −4°: detonación severa. Nafta mala o exceso de carga en subida."],
+ ["TFT","Temperatura de la caja 10R80","90 a 102 °C","Más de 108 °C: parar en neutral y ralentí hasta que baje."],
+ ["ECT","Temperatura de refrigerante","88 a 100 °C","Más de 106 °C: radiador tapado de insectos o barro, o falta refrigerante."],
+ ["FRP","Presión del riel","200 a 2.500+ PSI","Menos de 500 PSI con carga: falla de la bomba de alta."],
+ ["Misfire","Fallos por cilindro 1-8","0 en todos","Cualquier valor persistente: bujía gastada o bobina con falla."]
+];
+const CHK_TIPS=[
+ {t:"Altura en los Andes (3.000 a 4.500 msnm)",d:"El Coyote es atmosférico y pierde alrededor del 10% de potencia cada 1.000 m. Usá el +/− de la palanca para mantenerlo entre 2.500 y 3.500 RPM en subidas largas y que no pierda inercia.",k:"w"},
+ {t:"Bajadas largas",d:"Modo Tow/Haul y fijar una marcha baja para frenar con el motor. Las pastillas recalentadas dejan de frenar justo cuando más las necesitás, y con el camper atrás pesa el doble.",k:"i"}
+];
+
+const SAMY_SEED=["Antirrábica vigente con certificado","Microchip ISO 11784/11785",
+ "Certificado Veterinario Internacional (APHIS/USDA)","Antiparasitario interno y externo al día",
+ "Libreta sanitaria completa y traducida","Arnés o caja de seguridad para la F-150",
+ "Bebedero y comedero de viaje","Stock de alimento para 3 semanas","Botiquín canino",
+ "Chapa con contacto y foto reciente","Chequeo veterinario presalida"];
+
+// Series recurrentes de contenido: el formato repetible es lo que sostiene una
+// cuenta. Todas están atadas a datos que la app YA calcula.
+const SERIES_SEED=[
+ {id:"s1",t:"Día X de 131",fmt:"Reel",note:"Un día cualquiera de ruta en 20 segundos. La serie ancla: la gente vuelve por el número."},
+ {id:"s2",t:"Cuánto costó cruzar esta frontera",fmt:"Carrusel",note:"El desglose real: TIP, seguro, fumigación, coimas, horas. Nadie publica esto y todos lo buscan."},
+ {id:"s3",t:"Dónde durmió Samy hoy",fmt:"Foto",note:"El personaje de la cuenta es el perro. Es la serie más fácil de sostener y la que más engancha."},
+ {id:"s4",t:"Cuánto gastamos esta semana",fmt:"Carrusel",note:"Sale directo de la app. Números reales, sin redondear para arriba."},
+ {id:"s5",t:"Qué cocinamos hoy en la camioneta",fmt:"Reel",note:"Cocina de camper: audiencia enorme y cero competencia en español."},
+ {id:"s6",t:"Lo que se rompió esta semana",fmt:"Reel",note:"La honestidad es el diferencial. Todo el mundo muestra el atardecer, nadie el radiador."},
+ {id:"s7",t:"La canción de este país",fmt:"Reel",note:"Vos tocando algo del lugar donde estás. Une la guitarra con el viaje."}
+];
+
+// Plan de mantenimiento por millas de la F-150 5.0 V8 cargada con camper.
+// Intervalos cortos a propósito: peso extra, calor, polvo y nafta de calidad variable.
+const MANT_SEED=[
+ {id:"m1",t:"Cambio de aceite y filtro",cada:5000,e:"🛢️"},
+ {id:"m2",t:"Rotación de neumáticos",cada:7500,e:"🔄"},
+ {id:"m3",t:"Filtro de aire del motor",cada:15000,e:"💨"},
+ {id:"m4",t:"Revisión de frenos (el camper los gasta más)",cada:10000,e:"🛑"},
+ {id:"m5",t:"Filtro de combustible",cada:20000,e:"⛽"},
+ {id:"m6",t:"Líquido de frenos / refrigerante",cada:30000,e:"🌡️"},
+ {id:"m7",t:"Alineación y balanceo",cada:10000,e:"📐"}
+];
+
+// Ficha completa del riesgo de Villazón. Investigado 2026-08-15 contra la
+// página oficial de AFIP/ARCA para viajeros. NO es asesoramiento legal: hay
+// que confirmarlo con el consulado antes de salir.
+const VILLAZON={
+ titulo:"Entrada del auto a Argentina por Villazón — opciones",
+ hallazgo:"La página oficial de AFIP para viajeros contempla explícitamente el caso de <b>ciudadanos argentinos radicados en el exterior</b>: pueden ingresar temporalmente un vehículo matriculado afuera, presentando <b>certificado consular de residencia en el exterior</b> (antigüedad mínima de 1 año) y el cambio de domicilio en el documento. El plazo, en ese caso, baja de 8 meses a <b>90 días improrrogables por año calendario</b>.",
+ opciones:[
+  {t:"A. Régimen de viajero, como argentino radicado en el exterior",prob:"La más probable",
+   req:"Certificado consular de residencia en el exterior (Consulado de Atlanta) · cambio de domicilio en el DNI · título del auto a nombre de Martín · licencia válida · seguro con cobertura de responsabilidad civil en Argentina (Mercosur)",
+   plazo:"90 días improrrogables, por año calendario",
+   riesgo:"El certificado consular hay que tramitarlo ANTES de salir de EEUU: desde la ruta no se consigue. Y el plazo de 90 días corre: si la idea es dejar la camioneta en Argentina más tiempo, esta vía no alcanza.",
+   accion:"Pedir turno en el Consulado de Atlanta esta semana. Ya tenés la carpeta armada con ellos."},
+  {t:"B. Régimen de mudanza / repatriación",prob:"Si la idea es quedarse",
+   req:"Acreditar residencia en el exterior por más de 2 años · el vehículo debe ser de propiedad del interesado con antigüedad mínima · trámite de importación con despachante",
+   plazo:"Definitivo (el auto queda nacionalizado)",
+   riesgo:"Caro y lento, y hay topes de valor. Es el camino solo si la decisión es quedarse en Argentina y quedarse con la camioneta.",
+   accion:"Cotizar con un despachante de aduana argentino desde ahora, no al llegar."},
+  {t:"C. Vender la camioneta antes de la frontera",prob:"Plan B",
+   req:"Vender en Bolivia, Perú o Chile a otro overlander o localmente, con la documentación en regla del país donde esté el TIP",
+   plazo:"—",
+   riesgo:"Vender un auto con patente extranjera en un país donde entró con permiso temporal tiene sus propias reglas: en varios países NO se puede sin nacionalizarlo. Hay que resolverlo con tiempo, no en la frontera.",
+   accion:"Si al llegar a Perú la opción A no está confirmada, empezar a explorar esta."},
+  {t:"D. Dejar el auto en depósito fiscal / zona franca",prob:"Poco probable",
+   req:"Depósito aduanero en Bolivia o Chile mientras se resuelve el trámite",
+   plazo:"Variable",
+   riesgo:"Costo diario y burocracia. Es la salida de emergencia si te rebotan en la frontera, no un plan.",
+   accion:"Tener identificado un depósito en Villazón/La Quiaca por las dudas."}
+ ],
+ fuentes:[
+  {t:"AFIP — Ingreso de vehículos de viajeros residentes en otros países",u:"https://www.afip.gob.ar/viajeros/ayuda/otros-paises.asp"},
+  {t:"Resolución General ANA 308/1984 (texto actualizado)",u:"https://www.argentina.gob.ar/normativa/nacional/norma-146823/actualizacion"},
+  {t:"Aduana News — nacionalidad vs. residencia en vehículos del Mercosur",u:"https://aduananews.com/vehiculos-del-mercosur-en-argentina-cuando-la-aduana-confunde-nacionalidad-con-residencia/"},
+  {t:"Consulado Argentino en Atlanta",u:"https://eatla.cancilleria.gob.ar/"}
+ ]
+};
+
+/* --------------------------------------------------------------------------
+   UTILIDADES
+   -------------------------------------------------------------------------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const q=s=>JSON.stringify(String(s)).replace(/"/g,'&quot;');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const now=()=>Date.now();
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
+const today=()=>iso(new Date());
+const D=s=>new Date(s+'T00:00:00');
+const dDiff=(a,b)=>Math.round((D(b)-D(a))/86400000);
+const MONTHS=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const DOW=["do","lu","ma","mi","ju","vi","sá"];
+const fDate=s=>{if(!s)return"—";const d=D(s);return d.getDate()+' '+MONTHS[d.getMonth()];};
+const n0=v=>Math.round(v||0).toLocaleString('es-AR');
+const n1=v=>(v||0).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const usd=v=>'$'+n0(v);
+const sgn=v=>(v>=0?'+':'−')+n0(Math.abs(v));
+function haversineKm(a,b,c,d){const R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180;
+ const t=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;
+ return R*2*Math.atan2(Math.sqrt(t),Math.sqrt(1-t));}
+function inferCountry(stop,prev){
+ const m=String(stop.note||"").match(/ya en ([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)?)/i);
+ if(m){const c=COUNTRY_PATTERNS.find(p=>p.country.toLowerCase()===m[1].trim().toLowerCase());if(c)return c.country;}
+ const cl=String(stop.n||"").replace(/\b(cruce|paso|entrada)\s+a\s+\S+/gi,"");
+ for(const p of COUNTRY_PATTERNS){if(p.re.test(cl))return p.country;}
+ return prev||"Estados Unidos";}
+
+/* --------------------------------------------------------------------------
+   ESTADO
+   -------------------------------------------------------------------------- */
+let PLAN={stops:[],items:[],budget:null,loaded:false};
+const REAL_EMPTY={days:{},exp:{},fuel:{},inc:{},ideas:{},tram:{},gates:{},oneoff:{},fx:{},
+ habitos:{},tareas:{},hlog:{},tlog:{},samy:{},ideasC:{},mant:{},inc2:{},songs:{},chk:{},
+ cfg:{odo0:null,ua:0}};
+// Quién está usando ESTE teléfono. No se sincroniza a propósito: el celular de
+// Martín es Martín y el de Lula es Lula.
+let YO=null;
+let REAL=JSON.parse(JSON.stringify(REAL_EMPTY));
+let VIEW="tablero",MAP=null,SYNC="off",FB_DB=null;
+
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('LS lleno',e);}}
+function saveReal(push=true){REAL.cfg.ua=now();lsSet(LS_REAL,REAL);if(push)pushReal();}
+const KEYS=["days","exp","fuel","inc","ideas","tram","gates","oneoff","fx","habitos","tareas","hlog","tlog","samy","ideasC","mant","inc2","songs","chk"];
+function mergeReal(local,remote){
+ if(!remote)return local;
+ const out=JSON.parse(JSON.stringify(local));
+ KEYS.forEach(k=>{const r=remote[k]||{};out[k]=out[k]||{};
+  Object.keys(r).forEach(id=>{const a=out[k][id],b=r[id];if(!a||(b&&(b.ua||0)>(a.ua||0)))out[k][id]=b;});});
+ if(remote.cfg&&(remote.cfg.ua||0)>(out.cfg.ua||0))out.cfg=remote.cfg;
+ return out;}
+function setSync(s,t){SYNC=s;const e=$('#sync');e.className='sync '+(s==='on'?'on':'');e.textContent=t||(s==='on'?'sinc':'local');}
+let pt=null;
+function pushReal(){
+ if(!FB_DB){setSync('off','local');return;}
+ clearTimeout(pt);
+ pt=setTimeout(()=>{FB_DB.collection(COL).doc(DOC_REAL).set(REAL,{merge:false})
+  .then(()=>setSync('on')).catch(()=>setSync('off','pendiente'));},900);}
+function initFirebase(){
+ if(window.__noFb||typeof firebase==='undefined'){setSync('off','sin red');return;}
+ try{
+  firebase.initializeApp(FB);FB_DB=firebase.firestore();
+  FB_DB.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  FB_DB.collection(COL).doc(DOC_PLAN).get().then(d=>{
+   if(d.exists){const p=d.data();PLAN={stops:p.stops||[],items:p.items||[],budget:p.budget||null,loaded:true};lsSet(LS_PLAN,PLAN);renderAll();}}).catch(()=>{});
+  FB_DB.collection(COL).doc(DOC_REAL).onSnapshot(d=>{
+   setSync('on');if(!d.exists)return;
+   const m=mergeReal(REAL,d.data());
+   if(JSON.stringify(m)!==JSON.stringify(REAL)){REAL=m;lsSet(LS_REAL,REAL);renderAll();}},
+   ()=>setSync('off','pendiente'));
+ }catch(e){setSync('off','error');}}
+
+/* ---- Fotos y audio en IndexedDB (no van a Firestore: tope de 1 MB) ---- */
+let IDB=null;
+function idb(){return new Promise(r=>{if(IDB)return r(IDB);
+ const q=indexedDB.open('vidaruta',1);
+ q.onupgradeneeded=e=>{e.target.result.createObjectStore('fotos');};
+ q.onsuccess=e=>{IDB=e.target.result;r(IDB);};q.onerror=()=>r(null);});}
+async function blobSave(k,v){const db=await idb();if(db)db.transaction('fotos','readwrite').objectStore('fotos').put(v,k);}
+async function blobGet(k){const db=await idb();if(!db)return null;
+ return new Promise(r=>{const g=db.transaction('fotos').objectStore('fotos').get(k);g.onsuccess=()=>r(g.result||null);g.onerror=()=>r(null);});}
+async function blobDel(k){const db=await idb();if(db)db.transaction('fotos','readwrite').objectStore('fotos').delete(k);}
+function resize(f){return new Promise(res=>{const fr=new FileReader();
+ fr.onload=()=>{const im=new Image();im.onload=()=>{const M=1400,s=Math.min(1,M/Math.max(im.width,im.height));
+  const c=document.createElement('canvas');c.width=im.width*s|0;c.height=im.height*s|0;
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72));};im.src=fr.result;};
+ fr.readAsDataURL(f);});}
+
+/* --------------------------------------------------------------------------
+   MODELO DERIVADO
+   -------------------------------------------------------------------------- */
+function planStops(){return (PLAN.stops||[]).filter(s=>s.start&&s.end);}
+function planEnriched(){
+ const st=planStops(),out=[];let prev="Estados Unidos",acc=0;
+ st.forEach((s,i)=>{const c=inferCountry(s,prev);prev=c;
+  const km=i>0?haversineKm(st[i-1].lat,st[i-1].lon,s.lat,s.lon)*ROAD_FACTOR:0;acc+=km;
+  out.push({...s,i,country:c,region:REGION_BY_COUNTRY[c]||"Sudamérica",legKm:km,accKm:acc});});
+ return out;}
+function tripBounds(){const st=planStops();if(!st.length)return{start:null,end:null,days:0};
+ return{start:st[0].start,end:st[st.length-1].end,days:dDiff(st[0].start,st[st.length-1].end)+1};}
+function planStopFor(d){const P=planEnriched();if(!P.length)return null;let c=P[0];
+ for(const s of P){if(dDiff(s.start,d)>=0)c=s;else break;}return c;}
+function fxRate(c){if(c==='USD')return 1;const f=REAL.fx[c];return(f&&f.r>0)?f.r:(FX_SEED[c]||1);}
+function fxOk(c){return c==='USD'||(REAL.fx[c]&&REAL.fx[c].ok);}
+const lExp=()=>Object.values(REAL.exp).filter(x=>x&&!x.del);
+const lFuel=()=>Object.values(REAL.fuel).filter(x=>x&&!x.del);
+const lInc=()=>Object.values(REAL.inc).filter(x=>x&&!x.del);
+const lDays=()=>Object.values(REAL.days).filter(x=>x&&!x.del).sort((a,b)=>a.date.localeCompare(b.date));
+
+function calc(){
+ const B=tripBounds(),t=today(),bud=PLAN.budget||{};
+ const perDay=bud.perDayUsd||{comida:{},alojamiento:{},otros:0};
+ const fuelP=bud.fuel||{kmPerLiter:18,pricePerLiter:{}};
+ const oneOff=bud.oneOff||[],contPct=bud.contingencyPct||20;
+ const started=B.start?dDiff(B.start,t)>=0:false;
+ const dayN=B.start?Math.max(0,Math.min(B.days,dDiff(B.start,t)+1)):0;
+ const daysLeft=B.end?Math.max(0,dDiff(t,B.end)):0;
+ const elapsed=Math.max(1,dayN);
+ const P=planEnriched();
+
+ let planCorr=0,planKm=0;
+ const byReg={};REGION_ORDER.forEach(r=>byReg[r]={dias:0,plan:0,real:0});
+ if(B.start){
+  for(let k=0;k<dayN;k++){const d=iso(D(B.start).getTime()+k*86400000);const s=planStopFor(d);if(!s)continue;
+   const v=(perDay.comida[s.region]||0)+(perDay.alojamiento[s.region]||0)+(perDay.otros||0);
+   planCorr+=v;byReg[s.region].dias++;byReg[s.region].plan+=v;}
+  const sh=planStopFor(t);planKm=sh?sh.accKm:0;
+  P.filter(s=>s.i<=(sh?sh.i:0)).forEach(s=>{const pr=(fuelP.pricePerLiter||{})[s.region]||1.2;
+   const c=(s.legKm/100)*(fuelP.kmPerLiter||18)*pr;planCorr+=c;if(byReg[s.region])byReg[s.region].plan+=c;});}
+
+ const exps=lExp(),fuels=lFuel(),incs=lInc();
+ let realCorr=0,realTotal=0;const byCat={};Object.keys(CATS).forEach(c=>byCat[c]=0);
+ exps.forEach(e=>{const u=e.usd||0;realTotal+=u;byCat[e.cat]=(byCat[e.cat]||0)+u;
+  if(CORRIENTE.includes(e.cat))realCorr+=u;
+  const r=REGION_BY_COUNTRY[e.country];if(r&&byReg[r])byReg[r].real+=u;});
+ fuels.forEach(f=>{const u=f.usd||0;realTotal+=u;realCorr+=u;byCat.nafta+=u;
+  const r=REGION_BY_COUNTRY[f.country];if(r&&byReg[r])byReg[r].real+=u;});
+ const income=incs.reduce((a,x)=>a+(x.usd||0),0);
+
+ let planDaily=0,planFuel=0;
+ P.forEach(s=>{const pr=(fuelP.pricePerLiter||{})[s.region]||1.2;planFuel+=(s.legKm/100)*(fuelP.kmPerLiter||18)*pr;});
+ if(B.start)for(let k=0;k<B.days;k++){const d=iso(D(B.start).getTime()+k*86400000);const s=planStopFor(d);if(!s)continue;
+  planDaily+=(perDay.comida[s.region]||0)+(perDay.alojamiento[s.region]||0)+(perDay.otros||0);}
+ const planOneOff=oneOff.reduce((a,o)=>a+(o.amount||0),0);
+ const planSub=planDaily+planFuel+planOneOff,planCont=planSub*contPct/100,planTotal=planSub+planCont;
+
+ let uniPag=0,uniPend=0;
+ oneOff.forEach(o=>{const s=REAL.oneoff[o.name];
+  if(s&&s.paid)uniPag+=(s.costUsd!=null?s.costUsd:o.amount||0);else uniPend+=(o.amount||0);});
+
+ const burn=realCorr/elapsed,burnPlan=planCorr/elapsed;
+ const desvio=realCorr-planCorr,desvioPct=planCorr>0?desvio/planCorr*100:0;
+ // Los ingresos ya cobrados cuentan como plata disponible. Lo que NO se hace es
+ // extrapolar el ritmo de ingresos al resto del viaje: con 3 semanas de datos eso
+ // infla el runway y el tablero pasa a mentir para el lado optimista. El escenario
+ // "si mantengo este ritmo" se muestra aparte, marcado como escenario.
+ const incRate=income/elapsed,netBurn=Math.max(0.01,burn-incRate);
+ const disponible=planTotal-realTotal+income,colchon=disponible-uniPend;
+ const runway=colchon/Math.max(0.01,burn);              // conservador: solo lo ya cobrado
+ const runwayOpt=colchon/netBurn;                        // escenario con ingresos sostenidos
+ const runwayRatio=daysLeft>0?runway/daysLeft:9;
+ const proyeccion=realTotal+burn*daysLeft+uniPend-income;
+ const proyDesvio=proyeccion-planTotal;
+
+ const odo0=REAL.cfg.odo0;
+ const odoNow=(()=>{const d=lDays().filter(x=>x.odo);return d.length?d[d.length-1].odo:null;})();
+ const millas=(odo0!=null&&odoNow!=null)?Math.max(0,odoNow-odo0):0,kmReal=millas*KM_PER_MI;
+ let gal=0;fuels.forEach(f=>{gal+=f.unit==='gal'?(f.qty||0):(f.qty||0)/L_PER_GAL;});
+ const mpgReal=gal>0&&millas>0?millas/gal:null,mpgPlan=235.215/(fuelP.kmPerLiter||18);
+ const kmPlanTotal=P.reduce((a,s)=>a+s.legKm,0),kmRest=Math.max(0,kmPlanTotal-kmReal);
+ const precioProm=REGION_ORDER.reduce((a,r)=>a+((fuelP.pricePerLiter||{})[r]||1.2),0)/4;
+ const mpgImpacto=mpgReal?(kmRest/100)*((235.215/mpgReal)-(fuelP.kmPerLiter||18))*precioProm:0;
+
+ const ld=lDays().slice(-1)[0];
+ const curStop=ld&&ld.stopIdx!=null?P[ld.stopIdx]:null;
+ const planHoy=planStopFor(t);
+ const atraso=curStop?dDiff(curStop.start,t):null;
+ const gates=GATES.map(g=>{const s=P.find(x=>g.m.test(x.n));
+  return{...g,date:s?s.start:null,dias:s?dDiff(t,s.start):null,st:(REAL.gates[g.id]||{}).status||'abierto'};}).filter(g=>g.date);
+
+ return{B,t,started,dayN,daysLeft,elapsed,P,exps,fuels,incs,income,incRate,
+  planCorr,realCorr,realTotal,byCat,byReg,planTotal,planSub,planCont,planDaily,planFuel,planOneOff,contPct,
+  uniPag,uniPend,oneOff,burn,burnPlan,netBurn,desvio,desvioPct,disponible,colchon,runway,runwayOpt,runwayRatio,proyeccion,proyDesvio,
+  odo0,odoNow,millas,kmReal,gal,mpgReal,mpgPlan,mpgImpacto,kmPlanTotal,planKm,curStop,planHoy,atraso,gates};}
+
+function sem(v,ok,warn,inv){return inv?(v<=ok?'ok':v<=warn?'warn':'bad'):(v>=ok?'ok':v>=warn?'warn':'bad');}
+
+/* --------------------------------------------------------------------------
+   MODAL
+   -------------------------------------------------------------------------- */
+function openMod(h){$('#modIn').innerHTML=h;$('#mod').classList.add('on');}
+function closeMod(){$('#mod').classList.remove('on');}
+$('#mod').addEventListener('click',e=>{if(e.target.id==='mod')closeMod();});
+
+/* --------------------------------------------------------------------------
+   TABLERO
+   -------------------------------------------------------------------------- */
+function renderTablero(){
+ const c=calc();
+ if(!planStops().length){$('#v-tablero').innerHTML='<div class="banner i">No se cargó el plan todavía. Conectate a internet una vez y la app se lo guarda para poder usarlo sin señal después.</div>';return;}
+ let h='';
+ h+=`<div class="hero"><div class="big">${c.started?'Día '+c.dayN+' de '+c.B.days:'Faltan '+dDiff(c.t,c.B.start)+' días'}</div>
+  <div class="sub">${c.started?esc((c.curStop||c.planHoy||{}).n||'')+' · '+c.daysLeft+' días para Córdoba':'Salida — '+fDate(c.B.start)}</div></div>`;
+
+ const rg=sem(c.runwayRatio,1.1,1.0);
+ h+=`<div class="kpis">
+  <div class="kpi ${rg} wide"><div class="l">¿Llego a Córdoba con plata?</div>
+   <div class="v">${c.runway>900?'—':n0(c.runway)} <small>días de autonomía · faltan ${n0(c.daysLeft)}</small></div>
+   <div class="bar"><i style="width:${Math.min(100,c.runwayRatio*100/1.5)}%;background:var(--${rg==='ok'?'ok':rg==='warn'?'warn':'bad'})"></i></div>
+   <div class="d">${rg==='ok'?'Vas bien.':rg==='warn'?'Justo: un imprevisto te come el margen.':'<b>No llegás al ritmo actual.</b> Hay que bajar el gasto diario, sumar ingresos o recortar algo del itinerario.'}
+   ${c.income>0?` Cuenta solo los ${usd(c.income)} ya cobrados. Si sostenés el ritmo de ingresos actual, serían <b>${n0(c.runwayOpt)}</b> días — pero eso es un escenario, no un dato.`:''}</div></div>
+
+  <div class="kpi ${sem(c.desvioPct,5,15,true)}"><div class="l">Burn rate real</div>
+   <div class="v">$${n0(c.burn)}<small>/día</small></div>
+   <div class="d">Plan: $${n0(c.burnPlan)}/día<br>${c.desvio>=0?'De más':'Ahorrado'}: <b>${usd(Math.abs(c.desvio))}</b></div></div>
+
+  <div class="kpi ${c.proyDesvio<=0?'ok':c.proyDesvio<c.planTotal*.1?'warn':'bad'}"><div class="l">Proyección final</div>
+   <div class="v">${usd(c.proyeccion)}</div>
+   <div class="d">Presupuesto: ${usd(c.planTotal)}<br><b class="${c.proyDesvio>0?'pos':'neg'}">${sgn(c.proyDesvio)} USD</b> vs plan</div></div>
+
+  <div class="kpi ${c.atraso==null?'':sem(Math.abs(c.atraso),2,5,true)}"><div class="l">Cronograma</div>
+   <div class="v">${c.atraso==null?'—':(c.atraso===0?'En fecha':(c.atraso>0?'+':'')+c.atraso+'d')}</div>
+   <div class="d">${c.curStop?esc(c.curStop.n.slice(0,30)):'Marcá dónde estás en Hoy'}<br>${c.atraso==null?'':c.atraso>0?'Atrasado':c.atraso<0?'Adelantado':'Justo'}</div></div>
+
+  <div class="kpi ${c.mpgReal==null?'':sem(c.mpgReal,c.mpgPlan,c.mpgPlan-1.5)}"><div class="l">Consumo real</div>
+   <div class="v">${c.mpgReal?n1(c.mpgReal):'—'}<small> MPG</small></div>
+   <div class="d">Plan: ${n1(c.mpgPlan)} MPG${c.mpgReal?`<br><b class="${c.mpgImpacto>0?'pos':'neg'}">${sgn(c.mpgImpacto)} USD</b> de nafta hasta el final`:'<br>Cargá litros + odómetro'}</div></div>
+
+  <div class="kpi te"><div class="l">Ingresos de ruta</div>
+   <div class="v">${usd(c.income)}</div>
+   <div class="d">$${n0(c.incRate)}/día · cubre el <b>${c.burn?n0(c.incRate/c.burn*100):0}%</b> del gasto diario</div></div>
+
+  <div class="kpi pu"><div class="l">Kilómetros</div>
+   <div class="v">${n0(c.kmReal)}<small> km</small></div>
+   <div class="d">Plan a la fecha: ${n0(c.planKm)} km<br>Faltan ${n0(Math.max(0,c.kmPlanTotal-c.kmReal))} km</div></div>
+ </div>`;
+
+ // --- Check-in semanal ---
+ const winF=(a,b)=>x=>x.date>=a&&x.date<=b;
+ const dOff=n=>iso(D(c.t).getTime()-n*86400000);
+ const sum=(arr,a,b)=>arr.filter(winF(a,b)).reduce((s,x)=>s+(x.usd||0),0);
+ const corr=[...c.exps.filter(x=>CORRIENTE.includes(x.cat)),...c.fuels];
+ const s1=sum(corr,dOff(6),c.t),s0=sum(corr,dOff(13),dOff(7));
+ const d1=Math.min(7,c.dayN),d0=Math.max(0,Math.min(7,c.dayN-7));
+ const p1=d1?s1/d1:0,p0=d0?s0/d0:0;
+ h+=`<div class="sec-t">Check-in semanal</div><div class="card"><table>
+  <tr><th>Semana</th><th class="n">Días</th><th class="n">Gasto</th><th class="n">Ingresos</th><th class="n">$/día neto</th></tr>
+  <tr><td>Últimos 7 días</td><td class="n">${d1}</td><td class="n">${usd(s1)}</td><td class="n">${usd(sum(c.incs,dOff(6),c.t))}</td><td class="n"><b>$${n0(p1-(d1?sum(c.incs,dOff(6),c.t)/d1:0))}</b></td></tr>
+  ${d0?`<tr><td>7 anteriores</td><td class="n">${d0}</td><td class="n">${usd(s0)}</td><td class="n">${usd(sum(c.incs,dOff(13),dOff(7)))}</td><td class="n">$${n0(p0)}</td></tr>`:''}
+  <tr><td>Objetivo del plan</td><td></td><td></td><td></td><td class="n">$${n0(c.burnPlan)}</td></tr></table>
+  <div class="note">${p1>c.burnPlan*1.15
+   ?'<b>Arriba del plan esta semana.</b> Antes de recortar paseos mirá dónde está: si es dormir, la salida son más noches libres; si es nafta, son más km de los previstos, no despilfarro.'
+   :p1<c.burnPlan*.85?'Por debajo del plan. Tenés margen para algo que valga la pena y no estaba presupuestado.'
+   :'En línea con el plan. Sin cambios necesarios.'}</div></div>`;
+
+ // --- Hitos ---
+ if(c.gates.length){
+  h+=`<div class="sec-t">Hitos críticos</div><div class="grid">`;
+  c.gates.forEach(g=>{
+   const pas=g.dias<0,cls=g.st==='ok'?'ok':(g.id==='villazon'?'bad':(pas?'':(g.dias<21?'warn':'')));
+   h+=`<div class="card" style="margin:0">
+    <div style="display:flex;gap:8px;align-items:flex-start"><b style="flex:1;font-size:14.5px">${esc(g.t)}</b>
+    <span class="tag ${cls}">${g.st==='ok'?'resuelto':g.st==='trabajando'?'en curso':'abierto'}</span></div>
+    <div class="muted" style="margin-top:3px">${fDate(g.date)} · ${pas?'ya pasó':'en '+g.dias+' días'}</div>
+    <div class="hint">${esc(g.note)}</div>
+    <div class="seg mt">${['abierto','trabajando','ok'].map(s=>`<button class="${g.st===s?'on':''}" onclick="setGate('${g.id}','${s}')" style="font-size:12px">${s==='ok'?'resuelto':s}</button>`).join('')}</div></div>`;});
+  h+=`</div>`;}
+
+ // --- Región ---
+ h+=`<div class="sec-t">Desvío por región</div><div class="card"><table>
+  <tr><th>Región</th><th class="n">Días</th><th class="n">Plan</th><th class="n">Real</th><th class="n">Δ</th></tr>
+  ${REGION_ORDER.map(r=>{const x=c.byReg[r];if(!x.dias&&!x.real)return'';const d=x.real-x.plan;
+   return `<tr><td><span style="color:${REGION_COLORS[r]}">●</span> ${r}</td><td class="n">${x.dias}</td>
+   <td class="n">${usd(x.plan)}</td><td class="n">${usd(x.real)}</td><td class="n ${d>0?'pos':'neg'}">${x.real?sgn(d):'—'}</td></tr>`;}).join('')}
+  </table><div class="hint">Solo gasto corriente. Los costos únicos se controlan uno por uno en Gastos.</div></div>`;
+
+ $('#v-tablero').innerHTML=h;}
+function setGate(id,s){REAL.gates[id]={status:s,ua:now()};saveReal();renderAll();}
+
+/* --------------------------------------------------------------------------
+   HOY
+   -------------------------------------------------------------------------- */
+function dayRec(d){if(!REAL.days[d])REAL.days[d]={date:d,odo:null,stopIdx:null,place:"",sleepType:"",sleepName:"",note:"",moment:"",mood:"",photos:[],ua:now()};return REAL.days[d];}
+function renderHoy(){
+ const c=calc(),t=c.t,r=dayRec(t),P=c.P;
+ const prev=(()=>{const d=lDays().filter(x=>x.odo&&x.date<t);return d.length?d[d.length-1].odo:c.odo0;})();
+ const kmHoy=(r.odo&&prev)?(r.odo-prev)*KM_PER_MI:null;
+ const stop=r.stopIdx!=null?P[r.stopIdx]:c.planHoy;
+ const country=stop?stop.country:"Estados Unidos",cur=CUR_BY_COUNTRY[country]||"USD";
+ const gh=[...c.exps.filter(e=>e.date===t),...c.fuels.filter(f=>f.date===t)];
+ const tot=gh.reduce((a,x)=>a+(x.usd||0),0);
+ const ih=c.incs.filter(x=>x.date===t).reduce((a,x)=>a+(x.usd||0),0);
+ let h='';
+ if(!c.started)h+=`<div class="banner i"><b>Faltan ${dDiff(t,c.B.start)} días para la salida.</b> Antes de arrancar: cargá el odómetro inicial en Ajustes y abrí esta página una vez con wifi.</div>`;
+
+ h+=`<div class="grid">
+  <div class="card"><h3>📍 Dónde estamos <span class="r">${esc(country)}</span></h3>
+   <select onchange="setDayStop(this.value)"><option value="">— elegí la parada —</option>
+   ${P.map(s=>`<option value="${s.i}" ${r.stopIdx==s.i?'selected':''}>${esc(s.n)}</option>`).join('')}</select>
+   <div class="mt"><input placeholder="…o el lugar exacto (pueblo, camping, playa)" value="${esc(r.place)}" onchange="setDay('place',this.value)"></div>
+   ${c.planHoy&&r.stopIdx!=null&&r.stopIdx!=c.planHoy.i?`<div class="note">El plan para hoy decía: <b>${esc(c.planHoy.n)}</b>.</div>`:''}</div>
+
+  <div class="card"><h3>🚙 Odómetro <span class="r">${prev?'último: '+n0(prev)+' mi':'sin registro'}</span></h3>
+   <div class="row"><div><label>Millas (tablero)</label>
+   <input type="number" inputmode="numeric" value="${r.odo||''}" onchange="setDay('odo',parseFloat(this.value)||null)" placeholder="${prev||''}"></div>
+   <div><label>Km de hoy</label><div style="padding:9px 0;font-size:24px;font-weight:800;color:var(--blue)">${kmHoy!=null?n0(kmHoy):'—'}</div></div></div></div>
+ </div>`;
+
+ h+=`<div class="card"><h3>💸 Gastos de hoy <span class="r">${usd(tot)}${ih?' · ingresos '+usd(ih):''}</span></h3>
+  <div class="chips">${Object.keys(CATS).map(k=>`<button class="chip" onclick="modExp('${k}')"><span class="e">${CATS[k].e}</span><span class="t">${CATS[k].t}</span></button>`).join('')}</div>
+  <div class="btnrow mt"><button class="btn b sm" onclick="modInc()">＋ Cargar un ingreso</button></div>
+  ${gh.length?`<div class="mt">${gh.map(x=>{const f=x.qty!=null,k=f?'nafta':x.cat;
+   return `<div class="li"><div class="ic">${CATS[k].e}</div>
+   <div class="m"><b>${esc(f?((x.qty||0)+' '+(x.unit==='gal'?'gal':'L')+' de nafta'):(x.desc||CATS[k].t))}</b>
+   <span>${n0(x.amt)} ${x.cur}${x.cur!=='USD'?' · TC '+n1(x.rate):''}</span></div>
+   <div class="a">${usd(x.usd)}</div><button class="x" onclick="delRec('${f?'fuel':'exp'}','${x.id}')">✕</button></div>`;}).join('')}</div>`
+   :'<div class="hint">Todavía no cargaste nada hoy.</div>'}
+  ${!fxOk(cur)&&cur!=='USD'?`<div class="banner w mt">Estás en ${esc(country)} y el TC de ${cur} sigue siendo el estimado (${n1(fxRate(cur))}). <b>Confirmalo en Ajustes</b> o todos los gastos de este país van a estar mal.</div>`:''}</div>`;
+
+ const ST=["libre","camping","hostal","hotel","casa","otro"];
+ h+=`<div class="grid">
+  <div class="card"><h3>🛏️ Dónde dormimos</h3>
+   <div class="seg">${ST.map(s=>`<button class="${r.sleepType===s?'on':''}" onclick="setDay('sleepType','${s}')">${s}</button>`).join('')}</div>
+   <div class="mt"><input placeholder="Nombre del lugar" value="${esc(r.sleepName)}" onchange="setDay('sleepName',this.value)"></div></div>
+  <div class="card"><h3>😊 Cómo estuvo el día</h3>
+   <div class="seg">${['😄','🙂','😐','😖'].map(m=>`<button class="${r.mood===m?'on':''}" onclick="setDay('mood','${m}')" style="font-size:20px">${m}</button>`).join('')}</div>
+   <textarea rows="2" class="mt" placeholder="Bitácora larga (opcional)" onchange="setDay('note',this.value)">${esc(r.note)}</textarea></div>
+ </div>`;
+
+ h+=`<div class="card"><h3>📸 El momento del día <span class="r">alimenta la pestaña Samineta</span></h3>
+  <textarea rows="2" placeholder="Una línea. Lo que contarías si te preguntan cómo estuvo hoy." onchange="setDay('moment',this.value)">${esc(r.moment)}</textarea>
+  <div class="ph" id="phBox"></div></div>`;
+
+ $('#v-hoy').innerHTML=h;drawPhotos(t);}
+
+function drawPhotos(date){
+ const b=$('#phBox');if(!b)return;const r=REAL.days[date]||{},ks=r.photos||[];
+ b.innerHTML=ks.map(k=>`<img data-k="${k}" onclick="rmPhoto('${date}','${k}')">`).join('')+
+  `<label class="add">＋<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${date}',this)"></label>`;
+ ks.forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});}
+async function addPhoto(d,i){const f=i.files&&i.files[0];if(!f)return;
+ const u=await resize(f),k=d+'_'+uid();await blobSave(k,u);
+ const r=dayRec(d);r.photos=(r.photos||[]).concat(k);r.ua=now();saveReal();drawPhotos(d);}
+async function rmPhoto(d,k){if(!confirm('¿Borrar esta foto?'))return;await blobDel(k);
+ const r=dayRec(d);r.photos=(r.photos||[]).filter(x=>x!==k);r.ua=now();saveReal();drawPhotos(d);}
+function setDay(f,v){const r=dayRec(today());r[f]=v;r.ua=now();saveReal();renderAll();}
+function setDayStop(v){const r=dayRec(today());r.stopIdx=v===''?null:parseInt(v,10);r.ua=now();saveReal();renderAll();}
+
+/* ---- Modal de gasto / ingreso ---- */
+function curNow(){const r=REAL.days[today()],P=planEnriched();
+ const s=(r&&r.stopIdx!=null)?P[r.stopIdx]:planStopFor(today());
+ const c=s?s.country:"Estados Unidos";
+ return{country:c,cur:CUR_BY_COUNTRY[c]||"USD",gal:GAL_COUNTRIES.includes(c)};}
+function modExp(cat){
+ const x=curNow(),f=cat==='nafta',cs=Object.keys(FX_SEED);
+ openMod(`<h2>${CATS[cat].e} ${CATS[cat].t}</h2>
+  ${f?`<div class="row"><div><label>Cantidad</label><input id="fQty" type="number" step="0.01" inputmode="decimal" autofocus></div>
+   <div><label>Unidad</label><select id="fUnit"><option value="gal" ${x.gal?'selected':''}>galones</option><option value="L" ${!x.gal?'selected':''}>litros</option></select></div></div>
+   <div class="mt"><label>Odómetro al cargar (millas)</label><input id="fOdo" type="number" inputmode="numeric"></div>`
+  :`<div><label>¿Qué fue?</label><input id="eDesc" placeholder="${CATS[cat].t.toLowerCase()}…" autofocus></div>`}
+  <div class="row mt"><div><label>Monto</label><input id="eAmt" type="number" step="0.01" inputmode="decimal" oninput="modPrev()"></div>
+  <div><label>Moneda</label><select id="eCur" onchange="modFx()">${cs.map(k=>`<option ${k===x.cur?'selected':''}>${k}</option>`).join('')}</select></div></div>
+  <div class="row mt" id="fxRow"><div><label>Tipo de cambio (1 USD = ?)</label><input id="eRate" type="number" step="0.0001" inputmode="decimal" value="${fxRate(x.cur)}" oninput="modPrev()"></div>
+  <div><label>En dólares</label><div id="ePrev" style="padding:9px 0;font-size:22px;font-weight:800;color:var(--blue)">$0</div></div></div>
+  <div class="mt"><label>Fecha</label><input id="eDate" type="date" value="${today()}"></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveExp('${cat}')">Guardar</button></div>
+  <div class="hint">País: ${esc(x.country)}. El TC queda congelado en el gasto: si mañana cambia, lo viejo no se toca.</div>`);
+ modFx();}
+function modFx(){const c=$('#eCur').value;$('#eRate').value=fxRate(c);$('#fxRow').style.display=c==='USD'?'none':'flex';modPrev();}
+function modPrev(){const a=parseFloat(($('#eAmt')||{}).value)||0,c=$('#eCur').value;
+ const r=c==='USD'?1:(parseFloat($('#eRate').value)||1);const p=$('#ePrev');if(p)p.textContent=usd(a/r);}
+function saveExp(cat){
+ const amt=parseFloat($('#eAmt').value)||0;if(!amt){alert('Falta el monto.');return;}
+ const cur=$('#eCur').value,rate=cur==='USD'?1:(parseFloat($('#eRate').value)||1);
+ const date=$('#eDate').value||today(),x=curNow(),id=uid();
+ const base={id,date,amt,cur,rate,usd:amt/rate,country:x.country,ua:now()};
+ if(cat==='nafta'){
+  const qty=parseFloat(($('#fQty')||{}).value)||0,unit=($('#fUnit')||{}).value||'L',odo=parseFloat(($('#fOdo')||{}).value)||null;
+  REAL.fuel[id]={...base,qty,unit,odo};
+  if(odo){const r=dayRec(date);if(!r.odo||odo>r.odo){r.odo=odo;r.ua=now();}}
+ }else REAL.exp[id]={...base,cat,desc:$('#eDesc').value||CATS[cat].t};
+ if(cur!=='USD'&&rate!==FX_SEED[cur])REAL.fx[cur]={r:rate,ok:true,ua:now()};
+ saveReal();closeMod();renderAll();}
+function delRec(k,id){if(!confirm('¿Borrar?'))return;
+ const m=k==='fuel'?REAL.fuel:k==='inc'?REAL.inc:REAL.exp;
+ if(m[id]){m[id].del=true;m[id].ua=now();}saveReal();renderAll();}
+
+function modInc(){
+ const x=curNow(),cs=Object.keys(FX_SEED);
+ const src=Object.values(REAL.ideas).filter(i=>!i.del);
+ openMod(`<h2>💵 Cargar un ingreso</h2>
+  <div><label>¿De qué?</label><select id="iSrc">${src.map(s=>`<option value="${esc(s.t)}">${esc(s.t)}</option>`).join('')}<option value="otro">Otro</option></select></div>
+  <div class="mt"><label>Detalle</label><input id="iDesc" placeholder="cliente, feria, venta…"></div>
+  <div class="row mt"><div><label>Monto</label><input id="eAmt" type="number" step="0.01" inputmode="decimal" oninput="modPrev()"></div>
+  <div><label>Moneda</label><select id="eCur" onchange="modFx()">${cs.map(k=>`<option ${k===x.cur?'selected':''}>${k}</option>`).join('')}</select></div></div>
+  <div class="row mt" id="fxRow"><div><label>Tipo de cambio</label><input id="eRate" type="number" step="0.0001" value="${fxRate(x.cur)}" oninput="modPrev()"></div>
+  <div><label>En dólares</label><div id="ePrev" style="padding:9px 0;font-size:22px;font-weight:800;color:var(--teal)">$0</div></div></div>
+  <div class="mt"><label>Fecha</label><input id="eDate" type="date" value="${today()}"></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveInc()">Guardar</button></div>`);
+ modFx();}
+function saveInc(){
+ const amt=parseFloat($('#eAmt').value)||0;if(!amt){alert('Falta el monto.');return;}
+ const cur=$('#eCur').value,rate=cur==='USD'?1:(parseFloat($('#eRate').value)||1);
+ const id=uid(),x=curNow();
+ REAL.inc[id]={id,date:$('#eDate').value||today(),src:$('#iSrc').value,desc:$('#iDesc').value||'',
+  amt,cur,rate,usd:amt/rate,country:x.country,ua:now()};
+ saveReal();closeMod();renderAll();}
+
+/* --------------------------------------------------------------------------
+   RUTA
+   -------------------------------------------------------------------------- */
+function renderRuta(){
+ const c=calc(),P=c.P,days=lDays();
+ let h=`<div id="map"></div><div class="sec-t">Bitácora — ${days.length} días registrados</div>`;
+ if(!days.length)h+=`<div class="card"><div class="muted">Cada vez que completás algo en <b>Hoy</b>, aparece acá.</div></div>`;
+ days.slice().reverse().forEach(d=>{
+  const s=d.stopIdx!=null?P[d.stopIdx]:null;
+  const g=[...c.exps.filter(e=>e.date===d.date),...c.fuels.filter(f=>f.date===d.date)].reduce((a,x)=>a+(x.usd||0),0);
+  const n=c.B.start?dDiff(c.B.start,d.date)+1:0;
+  h+=`<div class="card"><div style="display:flex;gap:9px;align-items:baseline">
+   <b style="font-size:16px">Día ${n}</b><span class="muted">${fDate(d.date)}</span>
+   <span style="margin-left:auto;font-weight:800">${usd(g)}</span></div>
+   <div style="margin-top:3px;font-size:14.5px">${esc(d.place||(s?s.n:'—'))} ${d.mood||''}</div>
+   ${d.sleepType?`<div class="muted">🛏️ ${esc(d.sleepType)}${d.sleepName?' · '+esc(d.sleepName):''}</div>`:''}
+   ${d.moment?`<div class="note">“${esc(d.moment)}”</div>`:''}
+   ${(d.photos&&d.photos.length)?`<div class="ph" data-day="${d.date}"></div>`:''}</div>`;});
+ $('#v-ruta').innerHTML=h;
+ days.forEach(d=>{const b=$(`.ph[data-day="${d.date}"]`);if(!b)return;
+  b.innerHTML=(d.photos||[]).map(k=>`<img data-k="${k}">`).join('');
+  (d.photos||[]).forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});});
+ drawMap();}
+function drawMap(){
+ if(window.__noLeaflet||typeof L==='undefined'){$('#map').innerHTML='<div style="padding:24px;text-align:center;color:var(--tx2)">Sin conexión: el mapa necesita internet. La bitácora de abajo funciona igual.</div>';return;}
+ const P=planEnriched();if(!P.length)return;
+ if(MAP){MAP.remove();MAP=null;}
+ MAP=L.map('map',{scrollWheelZoom:false}).setView([P[0].lat,P[0].lon],4);
+ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:18,attribution:'© OSM © CARTO'}).addTo(MAP);
+ L.polyline(P.map(s=>[s.lat,s.lon]),{color:'#90a4ae',weight:2,dashArray:'5,7'}).addTo(MAP);
+ const done=lDays().filter(d=>d.stopIdx!=null).map(d=>P[d.stopIdx]).filter(Boolean),u=[];
+ done.forEach(s=>{if(!u.length||u[u.length-1].i!==s.i)u.push(s);});
+ if(u.length>1)L.polyline(u.map(s=>[s.lat,s.lon]),{color:'#e65100',weight:4}).addTo(MAP);
+ const V=new Set(u.map(s=>s.i));
+ P.forEach(s=>{const v=V.has(s.i);
+  L.circleMarker([s.lat,s.lon],{radius:v?6:4,color:v?'#e65100':REGION_COLORS[s.region],
+   fillColor:v?'#e65100':'#fff',fillOpacity:1,weight:2})
+   .bindPopup(`<b>${esc(s.n)}</b><br>${fDate(s.start)} · ${esc(s.country)}`).addTo(MAP);});
+ if(u.length)MAP.setView([u[u.length-1].lat,u[u.length-1].lon],5);
+ setTimeout(()=>MAP&&MAP.invalidateSize(),150);}
+
+/* --------------------------------------------------------------------------
+   GASTOS
+   -------------------------------------------------------------------------- */
+let finTab='mov';
+function renderGastos(){
+ const c=calc();
+ let h=`<div class="seg" style="margin-bottom:14px">${[['mov','Movimientos'],['comp','Plan vs Real'],['uni','Costos únicos']]
+  .map(([k,t])=>`<button class="${finTab===k?'on':''}" onclick="finTab='${k}';renderGastos()">${t}</button>`).join('')}</div>`;
+
+ if(finTab==='mov'){
+  h+=`<div class="kpis" style="margin-bottom:14px">
+   <div class="kpi"><div class="l">Gastado</div><div class="v">${usd(c.realTotal)}</div><div class="d">de ${usd(c.planTotal)}</div></div>
+   <div class="kpi te"><div class="l">Ingresos</div><div class="v">${usd(c.income)}</div><div class="d">${c.realTotal?n0(c.income/c.realTotal*100):0}% del gasto</div></div>
+   <div class="kpi ok"><div class="l">Queda</div><div class="v">${usd(c.disponible)}</div><div class="d">${usd(c.uniPend)} comprometidos</div></div></div>`;
+  const all=[...c.exps,...c.fuels.map(f=>({...f,cat:'nafta',desc:(f.qty||0)+' '+(f.unit==='gal'?'gal':'L')+' de nafta',_f:1})),
+   ...c.incs.map(i=>({...i,cat:'ingreso',desc:(i.src||'')+(i.desc?' — '+i.desc:''),_i:1}))]
+   .sort((a,b)=>b.date.localeCompare(a.date)||(b.ua||0)-(a.ua||0));
+  if(!all.length)h+=`<div class="card"><div class="muted">Sin movimientos todavía.</div></div>`;
+  let last='';
+  all.forEach((x,ix)=>{
+   if(x.date!==last){last=x.date;
+    const t=all.filter(y=>y.date===x.date&&!y._i).reduce((a,y)=>a+(y.usd||0),0);
+    h+=`<div class="sec-t">${fDate(x.date)} · ${usd(t)}</div><div class="card">`;}
+   h+=`<div class="li"><div class="ic">${x._i?'💵':CATS[x.cat].e}</div>
+    <div class="m"><b>${esc(x.desc)}</b><span>${n0(x.amt)} ${x.cur}${x.cur!=='USD'?' · TC '+n1(x.rate):''} · ${esc(x.country||'')}</span></div>
+    <div class="a" ${x._i?'style="color:var(--ok)"':''}>${x._i?'+':''}${usd(x.usd)}</div>
+    <button class="x" onclick="delRec('${x._f?'fuel':x._i?'inc':'exp'}','${x.id}')">✕</button></div>`;
+   const nx=all[ix+1];if(!nx||nx.date!==x.date)h+=`</div>`;});}
+
+ if(finTab==='comp'){
+  h+=`<div class="card"><h3>El número que importa</h3><table>
+   <tr><td>Plan corriente a la fecha</td><td class="n">${usd(c.planCorr)}</td></tr>
+   <tr><td>Real corriente a la fecha</td><td class="n">${usd(c.realCorr)}</td></tr>
+   <tr style="font-weight:800"><td>Desvío</td><td class="n ${c.desvio>0?'pos':'neg'}">${sgn(c.desvio)} (${c.desvioPct>=0?'+':''}${n0(c.desvioPct)}%)</td></tr></table>
+   <div class="note">Positivo = gastando de más. Es el único número sobre el que podés actuar mañana: los costos únicos ya están decididos.</div></div>`;
+  h+=`<div class="card"><h3>Por categoría</h3><table>
+   <tr><th>Categoría</th><th class="n">Real</th><th class="n">%</th></tr>
+   ${Object.keys(CATS).filter(k=>c.byCat[k]>0).sort((a,b)=>c.byCat[b]-c.byCat[a]).map(k=>
+    `<tr><td>${CATS[k].e} ${CATS[k].t}</td><td class="n">${usd(c.byCat[k])}</td><td class="n">${c.realTotal?n0(c.byCat[k]/c.realTotal*100):0}%</td></tr>`).join('')}
+   <tr style="font-weight:800"><td>TOTAL</td><td class="n">${usd(c.realTotal)}</td><td class="n">100%</td></tr></table></div>`;
+  h+=`<div class="card"><h3>Presupuesto del plan (congelado)</h3><table>
+   <tr><td>Día a día</td><td class="n">${usd(c.planDaily)}</td></tr>
+   <tr><td>Nafta</td><td class="n">${usd(c.planFuel)}</td></tr>
+   <tr><td>Costos únicos</td><td class="n">${usd(c.planOneOff)}</td></tr>
+   <tr><td>Contingencia ${c.contPct}%</td><td class="n">${usd(c.planCont)}</td></tr>
+   <tr style="font-weight:800"><td>TOTAL</td><td class="n">${usd(c.planTotal)}</td></tr></table></div>`;}
+
+ if(finTab==='uni'){
+  let est=0;c.oneOff.forEach(o=>{if((REAL.oneoff[o.name]||{}).paid)est+=o.amount||0;});
+  const d=c.uniPag-est;
+  h+=`<div class="kpis" style="margin-bottom:14px">
+   <div class="kpi ok"><div class="l">Pagados</div><div class="v">${usd(c.uniPag)}</div><div class="d">${c.oneOff.filter(o=>(REAL.oneoff[o.name]||{}).paid).length} de ${c.oneOff.length}</div></div>
+   <div class="kpi warn"><div class="l">Pendientes</div><div class="v">${usd(c.uniPend)}</div><div class="d">Ya comprometidos</div></div></div>`;
+  if(est>0)h+=`<div class="card"><h3>Lo pagado, contra lo estimado</h3><table>
+   <tr><td>Estimado del plan</td><td class="n">${usd(est)}</td></tr>
+   <tr><td>Salió realmente</td><td class="n">${usd(c.uniPag)}</td></tr>
+   <tr style="font-weight:800"><td>Δ</td><td class="n ${d>0?'pos':'neg'}">${sgn(d)} (${(d>=0?'+':'')+n0(d/est*100)}%)</td></tr></table>
+   <div class="note">Si el desvío se mantiene, los ${usd(c.uniPend)} pendientes van a salir cerca de <b>${usd(c.uniPend*(1+d/est))}</b>.</div></div>`;
+  const cats={};c.oneOff.forEach(o=>{(cats[o.cat||'otros']=cats[o.cat||'otros']||[]).push(o);});
+  Object.keys(cats).forEach(k=>{
+   h+=`<div class="sec-t">${esc(k.charAt(0).toUpperCase()+k.slice(1))}</div><div class="card">`;
+   cats[k].sort((a,b)=>b.amount-a.amount).forEach(o=>{const s=REAL.oneoff[o.name]||{};
+    h+=`<div class="li"><button class="x" style="font-size:19px;color:${s.paid?'var(--ok)':'var(--tx3)'}" onclick="togOneOff(${q(o.name)})">${s.paid?'☑':'☐'}</button>
+     <div class="m"><b style="white-space:normal;${s.paid?'opacity:.55':''}">${esc(o.name)}</b>
+     ${s.paid&&s.costUsd!=null&&s.costUsd!==o.amount?`<span class="${s.costUsd>o.amount?'pos':'neg'}">real ${usd(s.costUsd)} · ${sgn(s.costUsd-o.amount)} vs plan</span>`:''}</div>
+     <div class="a">${usd(o.amount)}<span>${s.paid?'pagado':'estimado'}</span></div></div>`;});
+   h+=`</div>`;});}
+ $('#v-gastos').innerHTML=h;}
+function togOneOff(name){
+ const s=REAL.oneoff[name]||{};
+ if(s.paid){REAL.oneoff[name]={paid:false,ua:now()};saveReal();renderAll();return;}
+ const o=(PLAN.budget.oneOff||[]).find(x=>x.name===name);
+ const v=prompt('¿Cuánto salió realmente en USD?\n\n'+name+'\n\nEstimado: '+(o?o.amount:'?'),o?o.amount:'');
+ if(v===null)return;
+ REAL.oneoff[name]={paid:true,costUsd:parseFloat(v)||0,ua:now()};saveReal();renderAll();}
+
+/* --------------------------------------------------------------------------
+   INGRESOS
+   -------------------------------------------------------------------------- */
+const IC={remoto:"💻",online:"🛒",presencial:"🤝",contenido:"📱",otro:"📦"};
+function renderIngresos(){
+ const c=calc();
+ const ideas=Object.values(REAL.ideas).filter(i=>!i.del)
+  .sort((a,b)=>(b.pot-b.esf-b.riesgo)-(a.pot-a.esf-a.riesgo));
+ const porFuente={};c.incs.forEach(i=>{porFuente[i.src||'otro']=(porFuente[i.src||'otro']||0)+(i.usd||0);});
+ let h='';
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi te"><div class="l">Ingresado en ruta</div><div class="v">${usd(c.income)}</div><div class="d">$${n0(c.incRate)}/día promedio</div></div>
+  <div class="kpi te"><div class="l">Viaje autofinanciado</div><div class="v">${c.realTotal?n0(c.income/c.realTotal*100):0}<small>%</small></div>
+   <div class="d">de todo lo gastado hasta hoy</div></div>
+  <div class="kpi te"><div class="l">Días que te compró</div><div class="v">${n0(c.income/Math.max(1,c.netBurn))}</div><div class="d">de autonomía extra</div></div>
+  <div class="kpi te"><div class="l">Para cubrir el día</div><div class="v">$${n0(Math.max(0,c.burn-c.incRate))}<small>/día</small></div>
+   <div class="d">Lo que falta generar para gastar cero del ahorro</div></div></div>`;
+
+ h+=`<div class="banner w"><b>Antes de elegir cualquier idea, la parte que nadie te dice:</b> trabajar por dinero con visa de turista es ilegal en prácticamente todos los países de la ruta. La diferencia práctica no es moral, es de riesgo: cobrarle a un cliente del exterior en una cuenta del exterior es lo que hace todo el mundo y nadie controla; poner un puesto en una feria o cobrar por un servicio a un local es trabajo informal visible, y una multa migratoria en México o Centroamérica puede complicarte el permiso temporal del auto. Las ideas de abajo están ordenadas por eso.</div>`;
+
+ h+=`<div class="btnrow" style="margin-bottom:12px"><button class="btn b" onclick="modInc()">＋ Cargar un ingreso</button>
+  <button class="btn" onclick="modIdea()">＋ Nueva idea</button></div>`;
+
+ h+=`<div class="sec-t">Banco de ideas — ordenado por (potencial − esfuerzo − riesgo)</div>`;
+ ideas.forEach(i=>{
+  const gan=porFuente[i.t]||0;
+  h+=`<div class="card"><div style="display:flex;gap:9px;align-items:flex-start">
+   <div class="ic" style="width:36px;height:36px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:18px">${IC[i.cat]||'📦'}</div>
+   <div style="flex:1"><b style="font-size:15px">${esc(i.t)}</b>
+    <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap;font-size:11px;color:var(--tx2)">
+     <span>POTENCIAL <span class="score">${[1,2,3,4].map(n=>`<i class="${n<=i.pot?'f':''}"></i>`).join('')}</span></span>
+     <span>ESFUERZO <span class="score">${[1,2,3,4].map(n=>`<i class="${n<=i.esf?'f':''}"></i>`).join('')}</span></span>
+     <span>RIESGO LEGAL <span class="score">${[1,2,3,4].map(n=>`<i class="${n<=i.riesgo?'f':''}" style="${n<=i.riesgo?'background:var(--bad)':''}"></i>`).join('')}</span></span>
+    </div></div>
+   ${gan?`<div class="a" style="text-align:right;font-weight:800;color:var(--ok)">${usd(gan)}<span style="display:block;font-size:10px;color:var(--tx3)">generado</span></div>`:''}
+   </div>
+   <div class="hint">${esc(i.note||'')}</div>
+   <div class="seg mt">${['idea','probando','activa','descartada'].map(s=>`<button class="${i.st===s?'on':''}" onclick="setIdea('${i.id}','${s}')" style="font-size:12px">${s}</button>`).join('')}</div></div>`;});
+ $('#v-ingresos').innerHTML=h;}
+function setIdea(id,s){const i=REAL.ideas[id];if(i){i.st=s;i.ua=now();saveReal();renderAll();}}
+function modIdea(){
+ openMod(`<h2>Nueva idea de ingreso</h2>
+  <div><label>Idea</label><input id="idT" autofocus></div>
+  <div class="mt"><label>Tipo</label><select id="idC">${Object.keys(IC).map(k=>`<option value="${k}">${IC[k]} ${k}</option>`).join('')}</select></div>
+  <div class="row mt"><div><label>Potencial 1-4</label><input id="idP" type="number" min="1" max="4" value="2"></div>
+   <div><label>Esfuerzo 1-4</label><input id="idE" type="number" min="1" max="4" value="2"></div>
+   <div><label>Riesgo legal 1-4</label><input id="idR" type="number" min="1" max="4" value="1"></div></div>
+  <div class="mt"><label>Notas</label><textarea id="idN" rows="3"></textarea></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveIdea()">Guardar</button></div>`);}
+function saveIdea(){
+ const t=$('#idT').value.trim();if(!t)return;const id=uid();
+ REAL.ideas[id]={id,t,cat:$('#idC').value,pot:+$('#idP').value||2,esf:+$('#idE').value||2,
+  riesgo:+$('#idR').value||1,cap:0,st:'idea',note:$('#idN').value,ua:now()};
+ saveReal();closeMod();renderAll();}
+
+/* --------------------------------------------------------------------------
+   TRÁMITES
+   -------------------------------------------------------------------------- */
+function renderTramites(){
+ const c=calc(),items=(PLAN.items||[]).filter(i=>i.cat==='tramites');
+ const vil=c.gates.find(g=>g.id==='villazon'),vst=(REAL.gates.villazon||{}).status||'abierto';
+ let h='';
+ h+=`<div class="card" style="border-top:3px solid var(--red)">
+  <h3>🇦🇷 ${esc(VILLAZON.titulo)} <span class="r">${vil?'en '+vil.dias+' días':''}</span></h3>
+  <div class="banner ${vst==='ok'?'g':'r'}" style="margin-bottom:12px">${VILLAZON.hallazgo}</div>
+  <div class="hint" style="margin:0 0 12px"><b>Ojo:</b> esto es lo que dice la página oficial de AFIP para viajeros, no es asesoramiento legal. Confirmalo con el Consulado de Atlanta antes de salir — ya tenés la carpeta abierta con ellos.</div>
+  ${VILLAZON.opciones.map(o=>`<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px">
+   <div style="display:flex;gap:8px;align-items:baseline"><b style="flex:1">${esc(o.t)}</b><span class="tag ${o.prob.includes('probable')&&!o.prob.includes('Poco')?'ok':o.prob.includes('Plan B')?'warn':''}">${esc(o.prob)}</span></div>
+   <table style="margin-top:8px"><tr><td style="width:88px;color:var(--tx2)">Requisitos</td><td>${esc(o.req)}</td></tr>
+   <tr><td style="color:var(--tx2)">Plazo</td><td>${esc(o.plazo)}</td></tr>
+   <tr><td style="color:var(--tx2)">Riesgo</td><td>${esc(o.riesgo)}</td></tr></table>
+   <div class="note">➜ ${esc(o.accion)}</div></div>`).join('')}
+  <div class="seg mt">${['abierto','trabajando','ok'].map(s=>`<button class="${vst===s?'on':''}" onclick="setGate('villazon','${s}')">${s==='ok'?'resuelto':s}</button>`).join('')}</div>
+  <div class="hint">Fuentes: ${VILLAZON.fuentes.map(f=>`<a href="${esc(f.u)}" target="_blank">${esc(f.t)}</a>`).join(' · ')}</div></div>`;
+
+ h+=`<div class="sec-t">Trámites del plan — ${items.filter(i=>(REAL.tram[i.name]||{}).done).length} de ${items.length} hechos</div>`;
+ if(!items.length)h+=`<div class="card"><div class="muted">No se cargaron los trámites del plan. Conectate a internet una vez.</div></div>`;
+ items.forEach(i=>{const s=REAL.tram[i.name]||{};
+  h+=`<div class="card"><div style="display:flex;gap:10px;align-items:flex-start">
+   <button class="x" style="font-size:20px;color:${s.done?'var(--ok)':'var(--tx3)'}" onclick="togTram(${q(i.name)})">${s.done?'☑':'☐'}</button>
+   <div style="flex:1"><b style="font-size:15px;${s.done?'opacity:.6':''}">${esc(i.name)}</b>
+   ${s.done?`<div class="muted">Hecho ${s.date?fDate(s.date):''}${s.costUsd?' · '+usd(s.costUsd):''}</div>`:''}</div></div>
+   ${(i.notes||[]).slice(0,1).map(n=>`<div class="hint">${esc(String(n.tx||'').slice(0,400))}${String(n.tx||'').length>400?'…':''}</div>`).join('')}
+   ${(i.links||[]).length?`<div class="btnrow mt">${i.links.slice(0,4).map(l=>`<a class="btn sm" target="_blank" href="${esc(l.u)}">${esc(l.l)}</a>`).join('')}</div>`:''}</div>`;});
+ $('#v-tramites').innerHTML=h;}
+function togTram(name){
+ const s=REAL.tram[name]||{};
+ if(s.done)REAL.tram[name]={done:false,ua:now()};
+ else{const v=prompt('¿Cuánto salió en USD? (vacío si fue gratis)\n\n'+name,'');if(v===null)return;
+  REAL.tram[name]={done:true,date:today(),costUsd:parseFloat(v)||0,ua:now()};}
+ saveReal();renderAll();}
+
+/* --------------------------------------------------------------------------
+   COCINA
+   -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   COCINA
+   El módulo de cocina es la app que ya existía (`cocina.html`): 80 recetas
+   pescetarianas, buscador por lo que se consiguió en el mercado y lista de
+   compras que se arma sola con unidades reales. Se embebe tal cual en vez de
+   reescribirla: cualquier cambio se hace en ese archivo y acá se ve solo.
+   -------------------------------------------------------------------------- */
+function renderCocina(){
+ $('#v-cocina').innerHTML=`
+  <div class="card" style="padding:0;overflow:hidden">
+   <iframe src="cocina.html" title="Cocina de Ruta"
+    style="width:100%;height:calc(100vh - 210px);min-height:520px;border:0;display:block"></iframe>
+  </div>
+  <div class="hint" style="padding:0 4px">
+   La lista de compras y lo que tildás en la despensa se guardan en este dispositivo.
+   <a href="cocina.html" target="_blank">Abrir la cocina en pantalla completa</a>.
+  </div>`;}
+/* --------------------------------------------------------------------------
+   RUTINAS
+   -------------------------------------------------------------------------- */
+/* ---- helpers del modelo de rutinas ---- */
+const lunesDe=d=>{const z=new Date(d);z.setHours(0,0,0,0);z.setDate(z.getDate()-((z.getDay()+6)%7));return z;};
+const semanaIdx=d=>Math.round((lunesDe(d)-ANCLA)/(7*86400000));
+// Dueño de una tarea hoy: las fijas tienen dueño, las rotativas alternan por
+// semana con un offset (así cocinar y lavar los platos nunca caen en el mismo).
+function duenioDe(t,fecha){
+ if(t.tipo==='fija')return t.d;
+ if(t.tipo==='rotativa')return (semanaIdx(D(fecha))+(t.off||0))%2===0?'martin':'lula';
+ return null;}
+// hlog está keyed por "fecha|quien" en vez de por fecha: así Martín y Lula
+// pueden marcar el mismo día desde dos teléfonos sin pisarse al sincronizar.
+const hk=(f,q)=>f+'|'+q;
+const hSet=(f,q)=>new Set(((REAL.hlog[hk(f,q)]||{}).ids)||[]);
+const hHecho=(f,q,id)=>hSet(f,q).has(id);
+function togHab(f,q,id){
+ const s=hSet(f,q);s.has(id)?s.delete(id):s.add(id);
+ REAL.hlog[hk(f,q)]={f,q,ids:[...s],ua:now()};
+ saveReal();renderRutinas();}
+const lTareas=()=>Object.values(REAL.tareas).filter(t=>!t.del);
+const lHab=()=>Object.values(REAL.habitos).filter(h=>!h.del);
+const lTlog=()=>Object.values(REAL.tlog).filter(r=>r&&!r.del);
+function rachaHab(id,q,hoyStr){
+ let n=0,d=D(hoyStr).getTime();
+ if(!hHecho(iso(d),q,id))d-=86400000;
+ while(hHecho(iso(d),q,id)){n++;d-=86400000;}
+ return n;}
+// Estado de cada tarea: hace cuánto se hizo, si está pendiente, si está vencida.
+function estadoTareas(hoyStr){
+ const ult={},hoyPor={};
+ lTlog().forEach(r=>{if(!ult[r.tid]||r.d>ult[r.tid].d)ult[r.tid]=r;
+  if(r.d===hoyStr)(hoyPor[r.tid]=hoyPor[r.tid]||[]).push(r.by);});
+ const out={};
+ lTareas().forEach(x=>{const u=ult[x.id],dias=u?dDiff(u.d,hoyStr):null;
+  out[x.id]={dias,ultimaPor:u&&u.by,pendiente:dias===null||dias>=x.cada,
+   frescura:dias===null?0:Math.max(0,1-dias/x.cada),hechaHoy:!!hoyPor[x.id],
+   // "sin registro" no es lo mismo que "vencida": el día 1 todo está sin
+   // registro y pintar 25 tareas en rojo hace que no se mire ninguna.
+   vencida:dias!==null&&dias>=x.cada*2};});
+ return out;}
+function puntosDesde(desde,hasta){
+ const acc={martin:0,lula:0};
+ Object.values(REAL.hlog).forEach(l=>{
+  if(!l||!l.f||l.f<desde||l.f>hasta)return;
+  const nn=(l.ids||[]).length;
+  if(l.q==='juntos'){acc.martin+=nn/2;acc.lula+=nn/2;}
+  else if(acc[l.q]!==undefined)acc[l.q]+=nn;});
+ lTlog().forEach(r=>{if(r.d>=desde&&r.d<=hasta&&acc[r.by]!==undefined)acc[r.by]+=r.pts||1;});
+ return {martin:Math.round(acc.martin),lula:Math.round(acc.lula)};}
+function hacerTarea(tid){
+ if(!YO){alert('Primero decí quién sos, arriba.');return;}
+ const t=REAL.tareas[tid],hoyStr=today();
+ const ya=lTlog().find(r=>r.tid===tid&&r.d===hoyStr&&r.by===YO);
+ if(ya){REAL.tlog[ya.id]={...ya,del:true,ua:now()};}
+ else{const id=uid();REAL.tlog[id]={id,tid,d:hoyStr,by:YO,pts:t.pts,ua:now()};}
+ saveReal();renderRutinas();}
+function cambiarDuenio(tid){
+ const t=REAL.tareas[tid];if(!t||t.tipo!=='fija')return;
+ t.d=t.d==='martin'?'lula':'martin';t.ua=now();saveReal();renderRutinas();}
+function setYo(p){YO=p;try{localStorage.setItem('vr_yo',p||'');}catch(e){}renderAll();}
+
+/* ---- vista ---- */
+let rutTab='hoy',mesRef=null,mesVista=null;
+function renderRutinas(){
+ const c=calc(),hoyStr=c.t;
+ if(!YO){
+  $('#v-rutinas').innerHTML=`<div class="card" style="text-align:center;padding:34px 18px">
+   <h3 style="justify-content:center;font-size:16px">¿Quién está usando este teléfono?</h3>
+   <div class="hint" style="margin-bottom:18px">Queda guardado en este dispositivo. El de Martín es Martín y el de Lula es Lula — así el reparto de tareas tiene sentido.</div>
+   <div class="btnrow" style="justify-content:center">
+   ${Object.keys(PERSONAS).map(k=>`<button class="btn" style="flex:1;max-width:170px;padding:18px;border-color:${PERSONAS[k].color};color:${PERSONAS[k].color};font-size:16px" onclick="setYo('${k}')">${PERSONAS[k].nombre}</button>`).join('')}</div></div>`;
+  return;}
+
+ const ET=estadoTareas(hoyStr);
+ const pts=puntosDesde(iso(lunesDe(D(hoyStr))),hoyStr);
+ const totalPts=pts.martin+pts.lula;
+ const mios=lHab().filter(h=>h.q===YO||h.q==='ambos');
+ const dedos=lHab().filter(h=>h.q==='juntos');
+ const hechos=mios.filter(h=>hHecho(hoyStr,YO,h.id)).length+dedos.filter(h=>hHecho(hoyStr,'juntos',h.id)).length;
+ const totalH=mios.length+dedos.length;
+ const pct=totalH?Math.round(hechos/totalH*100):0;
+ const porFrescura=(a,b)=>ET[a.id].frescura-ET[b.id].frescura;
+
+ let h=`<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px 14px">
+  <span class="tag" style="background:${PERSONAS[YO].color};color:#fff">${PERSONAS[YO].nombre}</span>
+  <span class="muted" style="flex:1">${hechos} de ${totalH} hábitos hoy</span>
+  <button class="btn sm" onclick="setYo(null)">Cambiar</button></div>`;
+
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi ${pct>=70?'ok':pct>=40?'warn':'bad'}"><div class="l">Hoy</div>
+   <div class="v">${pct}<small>%</small></div>
+   <div class="bar"><i style="width:${pct}%;background:var(--${pct>=70?'ok':pct>=40?'warn':'bad'})"></i></div>
+   <div class="d">${hechos} de ${totalH} hábitos</div></div>
+  <div class="kpi pu"><div class="l">Reparto de la semana</div>
+   <div class="bar" style="display:flex;margin-top:12px">
+    <i style="width:${totalPts?pts.martin/totalPts*100:50}%;background:${PERSONAS.martin.color}"></i>
+    <i style="width:${totalPts?pts.lula/totalPts*100:50}%;background:${PERSONAS.lula.color}"></i></div>
+   <div class="d" style="display:flex;justify-content:space-between;margin-top:6px">
+    <span style="color:${PERSONAS.martin.color};font-weight:700">Martín ${pts.martin}</span>
+    <span>${totalPts} pts</span>
+    <span style="color:${PERSONAS.lula.color};font-weight:700">Lula ${pts.lula}</span></div></div>
+  <div class="kpi"><div class="l">Tareas pendientes</div>
+   <div class="v">${lTareas().filter(t=>ET[t.id].pendiente).length}</div>
+   <div class="d">${lTareas().filter(t=>ET[t.id].vencida).length} vencidas</div></div>
+  <div class="kpi te"><div class="l">Samy listo</div>
+   <div class="v">${Object.values(REAL.samy).filter(s=>s.ok).length}<small>/${Object.values(REAL.samy).length}</small></div>
+   <div class="d">para cruzar fronteras</div></div></div>`;
+
+ h+=`<div class="seg" style="margin-bottom:14px">${[['hoy','Hoy'],['mes','Mes'],['tareas','Tareas'],['samy','Samy'],['reparto','Reparto']]
+  .map(([k,l])=>`<button class="${rutTab===k?'on':''}" onclick="rutTab='${k}';renderRutinas()">${l}</button>`).join('')}</div>`;
+
+ if(rutTab==='hoy'){
+  h+=`<div class="sec-t">Hábitos de ${PERSONAS[YO].nombre} · ${mios.filter(x=>hHecho(hoyStr,YO,x.id)).length} de ${mios.length}</div><div class="card">
+   ${mios.map(x=>filaHab(x,YO,hoyStr)).join('')}
+   <div class="btnrow mt"><button class="btn sm" onclick="modHabito()">＋ Agregar hábito</button></div></div>`;
+  h+=`<div class="sec-t">De a dos · alcanza con que lo marque uno</div><div class="card">
+   ${dedos.map(x=>filaHab(x,'juntos',hoyStr)).join('')}</div>`;
+  const mias=lTareas().filter(t=>duenioDe(t,hoyStr)===YO&&ET[t.id].pendiente).sort(porFrescura);
+  h+=`<div class="sec-t">Me toca a mí · fijas y rotativas de esta semana</div><div class="card">
+   ${mias.length?mias.map(t=>filaTarea(t,ET,hoyStr)).join(''):'<div class="muted">Nada pendiente de tu lado. Buen momento para agarrar una libre.</div>'}</div>`;
+  const libres=lTareas().filter(t=>t.tipo==='libre'&&ET[t.id].pendiente).sort(porFrescura);
+  h+=`<div class="sec-t">Libres · la agarra quien puede y suma los puntos</div><div class="card">
+   ${libres.length?libres.map(t=>filaTarea(t,ET,hoyStr)).join(''):'<div class="muted">Todo al día.</div>'}</div>`;}
+
+ if(rutTab==='mes')h+=vistaMes(hoyStr);
+
+ if(rutTab==='tareas'){
+  Object.keys(TCATS).forEach(cat=>{
+   const l=lTareas().filter(t=>t.cat===cat).sort(porFrescura);if(!l.length)return;
+   h+=`<div class="sec-t">${TCATS[cat]} · ${l.filter(t=>ET[t.id].pendiente).length} pendientes</div><div class="card">
+    ${l.map(t=>filaTarea(t,ET,hoyStr,true)).join('')}</div>`;});
+  h+=`<div class="btnrow"><button class="btn" onclick="modTarea()">＋ Agregar tarea</button></div>`;}
+
+ if(rutTab==='samy'){
+  const sl=Object.values(REAL.samy);
+  h+=`<div class="sec-t">La diaria de Samy</div><div class="card">
+   ${lTareas().filter(t=>t.cat==='samy').map(t=>filaTarea(t,ET,hoyStr,true)).join('')}</div>`;
+  h+=`<div class="sec-t">Samy listo para el viaje · ${sl.filter(s=>s.ok).length} de ${sl.length}</div><div class="card">
+   ${sl.map(s=>`<div class="li" style="padding:8px 0">
+    <button class="x" style="font-size:18px;color:${s.ok?'var(--ok)':'var(--tx3)'}" onclick="togSamy('${s.id}')">${s.ok?'☑':'☐'}</button>
+    <div class="m"><b style="font-weight:${s.ok?'400':'700'};${s.ok?'color:var(--tx3);text-decoration:line-through':''}">${esc(s.t)}</b></div></div>`).join('')}
+   <div class="hint">Esto se revisa antes de cada frontera, no una sola vez: varios países piden el certificado veterinario emitido pocos días antes.</div></div>`;}
+
+ if(rutTab==='reparto')h+=vistaReparto(hoyStr,pts,ET);
+
+ $('#v-rutinas').innerHTML=h;}
+
+function filaHab(x,q,hoyStr){
+ const ok=hHecho(hoyStr,q,x.id),r=rachaHab(x.id,q,hoyStr);
+ return `<div class="li">
+  <button class="x" style="font-size:19px;color:${ok?'var(--ok)':'var(--tx3)'}" onclick="togHab('${hoyStr}','${q}','${x.id}')">${ok?'☑':'☐'}</button>
+  <div class="ic">${x.e}</div>
+  <div class="m"><b style="${ok?'color:var(--tx3);text-decoration:line-through;font-weight:400':''}">${esc(x.n)}</b></div>
+  ${r>0?`<span class="tag ${r>=7?'ok':''}" style="font-size:11px">🔥 ${r}</span>`:''}
+  <button class="x" onclick="delHab('${x.id}')">✕</button></div>`;}
+
+function filaTarea(t,ET,hoyStr,detalle){
+ const e=ET[t.id],d=duenioDe(t,hoyStr);
+ const col=d?PERSONAS[d].color:'#cbd5e1';
+ return `<div class="li" style="${e.vencida&&!e.hechaHoy?'background:#fff7f6;border-radius:8px':''}">
+  <button class="x" style="font-size:19px;color:${e.hechaHoy?'var(--ok)':'var(--tx3)'}" onclick="hacerTarea('${t.id}')">${e.hechaHoy?'☑':'☐'}</button>
+  <div class="ic">${t.e}</div>
+  <div class="m"><b style="${e.hechaHoy?'color:var(--tx3);text-decoration:line-through;font-weight:400':''}">${esc(t.n)}</b>
+   ${detalle?`<span>${e.dias===null?'sin registro':e.dias===0?'hoy · '+((PERSONAS[e.ultimaPor]||{}).nombre||''):'hace '+e.dias+' d · '+((PERSONAS[e.ultimaPor]||{}).nombre||'')} · cada ${t.cada} d · ${t.tipo}</span>`:''}</div>
+  <span class="tag" style="background:${col};color:#fff;cursor:${t.tipo==='fija'?'pointer':'default'}" ${t.tipo==='fija'?`onclick="cambiarDuenio('${t.id}')" title="Tocá para pasarla a la otra persona"`:''}>${d?PERSONAS[d].corto:'○'}</span>
+  <span class="a" style="font-size:13px;color:var(--tx3);width:20px">${t.pts}</span>
+  ${detalle?`<button class="x" onclick="delTarea('${t.id}')">✕</button>`:''}</div>`;}
+
+function vistaMes(hoyStr){
+ if(!mesRef){const d=D(hoyStr);mesRef={y:d.getFullYear(),m:d.getMonth()};}
+ if(!mesVista)mesVista=YO;
+ const dias=new Date(mesRef.y,mesRef.m+1,0).getDate();
+ const fechas=Array.from({length:dias},(_,i)=>{const d=new Date(mesRef.y,mesRef.m,i+1);
+  return{f:iso(d),n:i+1,lun:((d.getDay()+6)%7)===0};});
+ const lista=lHab().filter(x=>x.q===mesVista||x.q==='ambos'||x.q==='juntos');
+ const qDe=x=>x.q==='juntos'?'juntos':mesVista;
+ const on=(x,f)=>hHecho(f,qDe(x),x.id);
+ // Solo cuentan los días desde que arrancó el viaje: contar como incumplidos
+ // los días en que la app todavía no existía da un porcentaje falso y desmoraliza.
+ const arranque=(tripBounds().start)||'0000-01-01';
+ const pasados=fechas.filter(x=>x.f<=hoyStr&&x.f>=arranque);
+ const objetivo=lista.length*pasados.length;
+ const cumplidos=pasados.reduce((a,x)=>a+lista.filter(y=>on(y,x.f)).length,0);
+ const pct=objetivo?Math.round(cumplidos/objetivo*100):0;
+ const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+ let h=`<div class="card" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <button class="btn sm" onclick="moverMes(-1)">‹</button>
+  <b style="flex:1;text-align:center;font-size:16px">${MESES[mesRef.m]} ${mesRef.y}</b>
+  <button class="btn sm" onclick="moverMes(1)">›</button>
+  <div class="seg" style="width:100%">${Object.keys(PERSONAS).map(k=>`<button class="${mesVista===k?'on':''}" onclick="mesVista='${k}';renderRutinas()">${PERSONAS[k].nombre}</button>`).join('')}</div></div>`;
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi"><div class="l">Progreso del mes</div><div class="v">${pct}<small>%</small></div>
+   <div class="d">${cumplidos} de ${objetivo} marcas posibles</div></div>
+  <div class="kpi pu"><div class="l">Días de viaje este mes</div><div class="v">${pasados.length}</div>
+   <div class="d">${arranque>iso(new Date(mesRef.y,mesRef.m,1))?'desde la salida ('+fDate(arranque)+')':'de '+dias+' del mes'}</div></div></div>`;
+ const editable=mesVista===YO;
+ h+=`<div class="card"><h3>Seguimiento <span class="r">${editable?'tocá cualquier día pasado':'solo lectura'}</span></h3>
+  <div style="overflow-x:auto"><div class="grilla" style="--cols:${dias}">
+  <div class="g-esq"></div>${fechas.map(x=>`<div class="g-dia ${x.f===hoyStr?'hoy':''}">${x.n}</div>`).join('')}
+  ${lista.map(x=>`<div class="g-nom">${x.e} ${esc(x.n)}</div>`+
+    fechas.map(f=>`<div class="celda ${on(x,f.f)?'on':''} ${f.f>hoyStr?'futuro':''}" ${(f.f>hoyStr||!editable)?'':`onclick="togHab('${f.f}','${qDe(x)}','${x.id}')"`}></div>`).join('')).join('')}
+  </div></div></div>`;
+ h+=`<div class="card"><h3>Cumplimiento por hábito <span class="r">${pasados.length} días</span></h3>
+  ${lista.map(x=>({x,c:pasados.filter(f=>on(x,f.f)).length})).sort((a,b)=>b.c-a.c).map(({x,c})=>{
+   const p=pasados.length?Math.round(c/pasados.length*100):0;
+   return `<div class="li"><div class="ic">${x.e}</div>
+    <div class="m"><b>${esc(x.n)}</b><span>🔥 ${rachaHab(x.id,qDe(x),hoyStr)} de racha</span>
+     <div class="bar" style="margin:5px 0 0"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=50?'var(--blue)':'var(--warn)'}"></i></div></div>
+    <div class="a">${p}%<span>${c}/${pasados.length}</span></div></div>`;}).join('')}</div>`;
+ return h;}
+function moverMes(n){const d=new Date(mesRef.y,mesRef.m+n,1);mesRef={y:d.getFullYear(),m:d.getMonth()};renderRutinas();}
+
+function vistaReparto(hoyStr,pts,ET){
+ const serie=Array.from({length:14},(_,i)=>{
+  const d=iso(D(hoyStr).getTime()-(13-i)*86400000);
+  const p=puntosDesde(d,d);return{d,m:p.martin,l:p.lula};});
+ const max=Math.max(6,...serie.map(s=>Math.max(s.m,s.l)));
+ const desde=iso(D(hoyStr).getTime()-29*86400000);
+ const mes=puntosDesde(desde,hoyStr),tm=mes.martin+mes.lula;
+ const pend=lTareas().filter(t=>ET[t.id].pendiente).sort((a,b)=>(ET[b.id].dias||999)-(ET[a.id].dias||999));
+ let h=`<div class="card"><h3>Puntos por día <span class="r">últimos 14 días</span></h3>
+  <div style="display:flex;align-items:flex-end;gap:5px;height:120px;padding:8px 0">
+  ${serie.map(s=>`<div style="flex:1;display:flex;align-items:flex-end;gap:2px;height:100%" title="${s.d}">
+   <span style="flex:1;background:${PERSONAS.martin.color};border-radius:2px 2px 0 0;height:${s.m/max*100}%;min-height:2px"></span>
+   <span style="flex:1;background:${PERSONAS.lula.color};border-radius:2px 2px 0 0;height:${s.l/max*100}%;min-height:2px"></span></div>`).join('')}</div>
+  <div class="hint">■ <b style="color:${PERSONAS.martin.color}">Martín ${pts.martin}</b> esta semana · ■ <b style="color:${PERSONAS.lula.color}">Lula ${pts.lula}</b></div></div>`;
+ h+=`<div class="card"><h3>Reparto de los últimos 30 días</h3>
+  ${['martin','lula'].map(p=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+   <span style="width:62px;color:${PERSONAS[p].color};font-weight:700">${PERSONAS[p].nombre}</span>
+   <div class="bar" style="flex:1;margin:0"><i style="width:${tm?mes[p]/tm*100:50}%;background:${PERSONAS[p].color}"></i></div>
+   <b style="width:38px;text-align:right">${mes[p]}</b></div>`).join('')}
+  <div class="note">${tm&&Math.abs(mes.martin-mes.lula)/tm>0.25
+   ? `El reparto está desbalanceado: <b>${mes.martin>mes.lula?'Martín':'Lula'}</b> viene haciendo bastante más. Vale la pena mirar qué tareas fijas conviene dar vuelta antes de que se convierta en un tema.`
+   : 'El reparto está parejo. Nada que ajustar.'}</div></div>`;
+ h+=`<div class="card"><h3>Deuda pendiente <span class="r">${pend.length}</span></h3>
+  ${pend.slice(0,10).map(t=>`<div class="li"><div class="ic">${t.e}</div>
+   <div class="m"><b>${esc(t.n)}</b><span>${ET[t.id].dias===null?'sin registro':'hace '+ET[t.id].dias+' días'} · cada ${t.cada} d</span></div>
+   <span class="tag ${ET[t.id].vencida?'bad':'warn'}">${ET[t.id].vencida?'vencida':'toca'}</span></div>`).join('')}</div>`;
+ return h;}
+
+function togSamy(id){const s=REAL.samy[id];if(s){s.ok=!s.ok;s.ua=now();saveReal();renderRutinas();}}
+function delHab(id){if(!confirm('¿Quitar este hábito para los dos?'))return;
+ REAL.habitos[id]={...REAL.habitos[id],del:true,ua:now()};saveReal();renderRutinas();}
+function delTarea(id){if(!confirm('¿Quitar esta tarea para los dos?'))return;
+ REAL.tareas[id]={...REAL.tareas[id],del:true,ua:now()};saveReal();renderRutinas();}
+function modHabito(){
+ openMod(`<h2>Nuevo hábito</h2>
+  <div class="row"><div style="flex:0 0 74px"><label>Emoji</label><input id="hE" value="⭐"></div>
+  <div><label>Hábito</label><input id="hT" autofocus placeholder="Tomar sol 10 min"></div></div>
+  <div class="mt"><label>¿De quién?</label><select id="hQ">
+   <option value="ambos">Cada uno por su lado</option><option value="martin">Solo Martín</option>
+   <option value="lula">Solo Lula</option><option value="juntos">De a dos (lo marca uno)</option></select></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveHabito()">Guardar</button></div>`);}
+function saveHabito(){const n=$('#hT').value.trim();if(!n)return;const id=uid();
+ REAL.habitos[id]={id,n,e:$('#hE').value||'⭐',q:$('#hQ').value,ua:now()};saveReal();closeMod();renderRutinas();}
+function modTarea(){
+ openMod(`<h2>Nueva tarea</h2>
+  <div class="row"><div style="flex:0 0 74px"><label>Emoji</label><input id="tE" value="🧩"></div>
+  <div><label>Tarea</label><input id="tN" autofocus placeholder="Limpiar el filtro de agua"></div></div>
+  <div class="row mt"><div><label>Tipo</label><select id="tT">
+   <option value="rotativa">Rotativa (alterna cada semana)</option><option value="fija">Fija (dueño)</option>
+   <option value="libre">Libre (la agarra quien puede)</option></select></div>
+   <div><label>Categoría</label><select id="tC">${Object.keys(TCATS).map(k=>`<option value="${k}">${TCATS[k]}</option>`).join('')}</select></div></div>
+  <div class="row mt"><div><label>Cada cuántos días</label><input id="tD" type="number" min="1" value="1"></div>
+   <div><label>Puntos</label><input id="tP" type="number" min="1" max="5" value="1"></div></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveTarea()">Guardar</button></div>`);}
+function saveTarea(){const n=$('#tN').value.trim();if(!n)return;const id=uid(),tipo=$('#tT').value;
+ REAL.tareas[id]={id,n,e:$('#tE').value||'🧩',cat:$('#tC').value,tipo,
+  d:tipo==='fija'?'martin':undefined,off:0,cada:+$('#tD').value||1,pts:+$('#tP').value||1,ua:now()};
+ saveReal();closeMod();renderRutinas();}
+
+/* --------------------------------------------------------------------------
+   SAMINETA
+   -------------------------------------------------------------------------- */
+let samTab='momentos';
+function renderSamineta(){
+ const c=calc(),days=lDays().filter(d=>d.moment||(d.photos&&d.photos.length));
+ const ideas=Object.values(REAL.ideasC).filter(i=>!i.del).sort((a,b)=>(a.st==='publicado')-(b.st==='publicado'));
+ let h=`<div class="seg" style="margin-bottom:14px">${[['momentos','Momentos capturados'],['series','Series'],['ideas','Ideas y calendario']]
+  .map(([k,t])=>`<button class="${samTab===k?'on':''}" onclick="samTab='${k}';renderSamineta()">${t}</button>`).join('')}</div>`;
+
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi pu"><div class="l">Momentos capturados</div><div class="v">${days.length}</div><div class="d">de ${c.dayN} días de viaje</div></div>
+  <div class="kpi pu"><div class="l">Fotos</div><div class="v">${lDays().reduce((a,d)=>a+((d.photos||[]).length),0)}</div><div class="d">guardadas en este dispositivo</div></div>
+  <div class="kpi pu"><div class="l">Ideas en el banco</div><div class="v">${ideas.filter(i=>i.st!=='publicado').length}</div>
+   <div class="d">${ideas.filter(i=>i.st==='publicado').length} ya publicadas</div></div></div>`;
+
+ if(samTab==='momentos'){
+  // Ficha de datos lista para copiar: el ángulo diferencial de la cuenta.
+  const ld=lDays().slice(-1)[0];
+  const kmHoy=(()=>{const d=lDays().filter(x=>x.odo);return d.length>1?(d[d.length-1].odo-d[d.length-2].odo)*KM_PER_MI:0;})();
+  const gHoy=[...c.exps.filter(e=>e.date===c.t),...c.fuels.filter(f=>f.date===c.t)].reduce((a,x)=>a+(x.usd||0),0);
+  const ficha=`Día ${c.dayN} de ${c.B.days} · ${(c.curStop||{}).country||''}\n`+
+   `📍 ${(ld&&ld.place)||((c.curStop||{}).n||'')}\n`+
+   `🛣️ ${n0(kmHoy)} km hoy · ${n0(c.kmReal)} km acumulados\n`+
+   `💸 USD ${n0(gHoy)} gastados hoy · promedio USD ${n0(c.burn)}/día\n`+
+   `⛽ ${c.mpgReal?n1(c.mpgReal)+' MPG reales':'—'}\n`+
+   `🛏️ ${(ld&&ld.sleepType)||'—'}`;
+  h+=`<div class="card" style="border-top:3px solid var(--purple)"><h3>📊 Ficha de datos de hoy <span class="r">para pegar en el posteo</span></h3>
+   <textarea rows="7" id="fichaTxt" readonly style="font-family:ui-monospace,monospace;font-size:12.5px">${esc(ficha)}</textarea>
+   <div class="btnrow mt"><button class="btn b sm" onclick="copiarFicha()">Copiar</button></div>
+   <div class="note">Este es el diferencial de La Samineta: hay miles de cuentas con atardeceres, ninguna publica los números reales. Sale automático de lo que cargás en Hoy.</div></div>`;
+  if(!days.length)h+=`<div class="card"><div class="muted">Todavía no hay momentos. Cada línea que escribís en <b>Hoy → El momento del día</b> aparece acá.</div></div>`;
+  days.slice().reverse().forEach(d=>{
+   const n=c.B.start?dDiff(c.B.start,d.date)+1:0;
+   h+=`<div class="card"><div style="display:flex;gap:9px;align-items:baseline">
+    <b>Día ${n}</b><span class="muted">${fDate(d.date)} · ${esc(d.place||'')}</span></div>
+    ${d.moment?`<div class="note">“${esc(d.moment)}”</div>`:''}
+    ${(d.photos||[]).length?`<div class="ph" data-sam="${d.date}"></div>`:''}
+    <div class="btnrow mt"><button class="btn sm" onclick="momentoAIdea('${d.date}')">➜ Convertir en idea de posteo</button></div></div>`;});}
+
+ if(samTab==='series'){
+  h+=`<div class="hint" style="padding:0 4px 10px">Una cuenta se sostiene con formatos repetibles, no con inspiración. Estas siete están atadas a datos que la app ya calcula.</div><div class="grid">`;
+  SERIES_SEED.forEach(s=>{
+   h+=`<div class="card" style="margin:0"><div style="display:flex;gap:8px;align-items:baseline">
+    <b style="flex:1;font-size:15px">${esc(s.t)}</b><span class="tag b">${esc(s.fmt)}</span></div>
+    <div class="hint">${esc(s.note)}</div>
+    <div class="btnrow mt"><button class="btn sm" onclick="serieAIdea(${q(s.t)},${q(s.fmt)})">＋ Anotar una de esta serie</button></div></div>`;});
+  h+=`</div>`;}
+
+ if(samTab==='ideas'){
+  h+=`<div class="btnrow" style="margin-bottom:12px"><button class="btn" onclick="modIdeaC()">＋ Nueva idea</button></div>`;
+  if(!ideas.length)h+=`<div class="card"><div class="muted">Sin ideas guardadas. Convertí un momento o anotá una de una serie.</div></div>`;
+  ideas.forEach(i=>{
+   h+=`<div class="card"><div style="display:flex;gap:8px;align-items:baseline">
+    <b style="flex:1;font-size:15px;${i.st==='publicado'?'opacity:.55':''}">${esc(i.t)}</b>
+    <span class="tag ${i.st==='publicado'?'ok':i.st==='editado'?'b':''}">${esc(i.st)}</span></div>
+    <div class="muted">${esc(i.fmt||'')}${i.fecha?' · para el '+fDate(i.fecha):''}</div>
+    ${i.note?`<div class="hint">${esc(i.note)}</div>`:''}
+    <div class="seg mt">${['idea','grabado','editado','publicado'].map(s=>`<button class="${i.st===s?'on':''}" onclick="setIdeaC('${i.id}','${s}')" style="font-size:12px">${s}</button>`).join('')}</div></div>`;});}
+
+ $('#v-samineta').innerHTML=h;
+ days.forEach(d=>{const b=$(`.ph[data-sam="${d.date}"]`);if(!b)return;
+  b.innerHTML=(d.photos||[]).map(k=>`<img data-k="${k}">`).join('');
+  (d.photos||[]).forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});});}
+function copiarFicha(){const t=$('#fichaTxt');t.select();
+ navigator.clipboard?navigator.clipboard.writeText(t.value).then(()=>alert('Copiado.')):document.execCommand('copy');}
+function momentoAIdea(date){const d=REAL.days[date];if(!d)return;const id=uid();
+ REAL.ideasC[id]={id,t:d.moment||('Día '+fDate(date)),fmt:'Reel',st:'idea',note:'Del '+fDate(date)+' — '+(d.place||''),fecha:'',ua:now()};
+ saveReal();renderAll();}
+function serieAIdea(t,f){const id=uid();
+ REAL.ideasC[id]={id,t,fmt:f,st:'idea',note:'',fecha:today(),ua:now()};saveReal();renderAll();}
+function setIdeaC(id,s){const i=REAL.ideasC[id];if(i){i.st=s;i.ua=now();saveReal();renderAll();}}
+function modIdeaC(){
+ openMod(`<h2>Nueva idea de contenido</h2>
+  <div><label>Idea</label><input id="cT" autofocus></div>
+  <div class="row mt"><div><label>Formato</label><select id="cF"><option>Reel</option><option>Carrusel</option><option>Foto</option><option>Historia</option><option>YouTube</option></select></div>
+   <div><label>Para cuándo</label><input id="cD" type="date"></div></div>
+  <div class="mt"><label>Notas</label><textarea id="cN" rows="3"></textarea></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveIdeaC()">Guardar</button></div>`);}
+function saveIdeaC(){const t=$('#cT').value.trim();if(!t)return;const id=uid();
+ REAL.ideasC[id]={id,t,fmt:$('#cF').value,fecha:$('#cD').value,note:$('#cN').value,st:'idea',ua:now()};
+ saveReal();closeMod();renderAll();}
+
+/* --------------------------------------------------------------------------
+   CAMIONETA
+   -------------------------------------------------------------------------- */
+let camTab='estado';
+/* Checklist semanal: el estado se guarda por semana (clave = lunes de esa
+   semana) para que quede historial y no se pise al reiniciar cada lunes. */
+function chkWeek(){return iso(lunesDe(D(today())));}
+function chkGet(){return new Set(((REAL.chk[chkWeek()]||{}).ids)||[]);}
+function chkTog(id){
+ const s=chkGet();s.has(id)?s.delete(id):s.add(id);
+ REAL.chk[chkWeek()]={w:chkWeek(),ids:[...s],ua:now()};
+ saveReal();renderCamioneta();}
+function chkTotal(){return CHK_SECS.reduce((a,x)=>a+x.items.length,0);}
+function renderCamioneta(){
+ const c=calc(),odo=c.odoNow||c.odo0||0;
+ const hist=Object.values(REAL.mant).filter(m=>!m.del).sort((a,b)=>b.date.localeCompare(a.date));
+ const inc=Object.values(REAL.inc2).filter(i=>!i.del).sort((a,b)=>b.date.localeCompare(a.date));
+ let h=`<div class="seg" style="margin-bottom:14px">${[['estado','Estado'],['checklist','Checklist semanal'],['motor','Croquis'],['electrico','Eléctrico']]
+  .map(([k,l])=>`<button class="${camTab===k?'on':''}" onclick="camTab='${k}';renderCamioneta()">${l}</button>`).join('')}</div>`;
+
+ if(camTab==='checklist'){
+  const done=chkGet(),tot=chkTotal(),pct=Math.round(done.size/tot*100);
+  const semanas=Object.values(REAL.chk).filter(w=>w&&(w.ids||[]).length>=tot).length;
+  const g=pct===100?'ok':pct>=50?'warn':'bad';
+  h+=`<div class="kpis" style="margin-bottom:14px">
+   <div class="kpi ${g}"><div class="l">Semana del ${fDate(chkWeek())}</div>
+    <div class="v">${done.size}<small>/${tot}</small></div>
+    <div class="bar"><i style="width:${pct}%;background:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})"></i></div>
+    <div class="d">${pct}% del control hecho</div></div>
+   <div class="kpi te"><div class="l">Semanas completas</div><div class="v">${semanas}</div>
+    <div class="d">controles cerrados en todo el viaje</div></div></div>`;
+  if(pct===100)h+=`<div class="banner g">Control de la semana cerrado. Marcá también <b>“Chequeo mecánico semanal”</b> en Rutinas para que sume los puntos.</div>`;
+  h+=`<div class="hint" style="padding:0 4px 10px">Se reinicia solo cada lunes y queda el historial. Los ítems con <span class="tag warn">verificar</span> son datos que dependen de tu camioneta y que conviene confirmar una vez, antes de salir.</div>`;
+
+  CHK_SECS.forEach(sec=>{
+   const hechos=sec.items.filter(i=>done.has(i.id)).length;
+   h+=`<div class="sec-t">${sec.n}. ${sec.t} · ${hechos}/${sec.items.length} <span style="text-transform:none;letter-spacing:0;font-weight:600">— ${esc(sec.s)}</span></div><div class="card">
+    ${sec.items.map(i=>{const ok=done.has(i.id);
+     return `<div class="li" style="align-items:flex-start">
+      <button class="x" style="font-size:19px;color:${ok?'var(--ok)':'var(--tx3)'};padding-top:2px" onclick="chkTog('${i.id}')">${ok?'☑':'☐'}</button>
+      <div class="m"><b style="white-space:normal;${ok?'color:var(--tx3);text-decoration:line-through;font-weight:400':''}">${esc(i.t)}
+       ${i.v?' <span class="tag warn" style="font-size:9.5px;vertical-align:middle">verificar</span>':''}</b>
+       <span style="white-space:normal;display:block;margin-top:3px;line-height:1.45">${esc(i.d)}</span></div></div>`;}).join('')}
+    </div>`;});
+
+  h+=`<div class="sec-t">Rangos en vivo — qué mirar en la app</div><div class="card">
+   <div style="overflow-x:auto"><table>
+   <tr><th>PID</th><th>Normal</th><th>Alarma</th></tr>
+   ${CHK_PIDS.map(([k,n,ok,bad])=>`<tr>
+    <td><b style="font-family:ui-monospace,monospace;font-size:12px">${esc(k)}</b><br><span class="muted" style="font-size:11.5px">${esc(n)}</span></td>
+    <td style="color:var(--ok);font-weight:700;white-space:nowrap">${esc(ok)}</td>
+    <td style="font-size:12.5px">${esc(bad)}</td></tr>`).join('')}
+   </table></div></div>`;
+
+  h+=`<div class="sec-t">Cómo manejarla en la Panamericana</div>`;
+  CHK_TIPS.forEach(t=>{h+=`<div class="banner ${t.k}"><b>${esc(t.t)}</b><br>${esc(t.d)}</div>`;});
+  h+=`<div class="btnrow"><button class="btn" onclick="if(confirm('¿Reiniciar el control de esta semana?')){REAL.chk['${chkWeek()}']={w:'${chkWeek()}',ids:[],ua:now()};saveReal();renderCamioneta();}">Reiniciar la semana</button></div>`;
+  $('#v-camioneta').innerHTML=h;return;}
+
+ if(camTab==='motor'){
+  h+=`<div class="card"><h3>🔧 Croquis del motor <span class="r">F-150 5.0 V8 Coyote</span></h3>
+   <a href="croquis-motor.jpg" target="_blank" title="Tocá para abrirlo en grande">
+    <img src="croquis-motor.jpg" alt="Croquis del motor con las 15 referencias" style="width:100%;border-radius:10px;border:1px solid var(--line);display:block"></a>
+   <div class="hint">Tocá la imagen para abrirla en grande y hacer zoom.</div></div>`;
+  // Los cinco puntos que el propio croquis marca en rojo. Se repiten acá porque
+  // es lo que hay que mirar con el capó abierto, no lo que hay que leer.
+  h+=`<div class="card"><h3>El chequeo de 2 minutos <span class="r">los rojos del croquis</span></h3>
+   ${[["8","Refrigerante","Nivel entre MIN y MAX, con el motor FRÍO."],
+      ["9","Tapa del sistema","NUNCA abrirla con el motor caliente."],
+      ["10","Varilla de aceite","Motor frío y en plano. Es el chequeo diario en ruta."],
+      ["11","Líquido de frenos","Si baja: pastillas gastadas o pérdida."],
+      ["3","Bornes auxiliares","De ahí sale el DC-DC del camper. Que estén firmes."]]
+   .map(([n,t,d])=>`<div class="li"><div class="ic" style="background:#ffebee;color:var(--bad);font-weight:800">${n}</div>
+    <div class="m"><b>${t}</b><span>${d}</span></div></div>`).join('')}
+   <div class="note">Esto es lo mismo que la rutina <b>“Chequeo pre-marcha”</b> de la pestaña Rutinas. Marcala ahí cuando lo hagas y queda registrado.</div></div>`;
+  $('#v-camioneta').innerHTML=h;return;}
+
+ if(camTab==='electrico'){
+  h+=`<div class="card" style="padding:0;overflow:hidden">
+   <iframe src="panel-electrico.html" title="Panel eléctrico"
+    style="width:100%;height:calc(100vh - 240px);min-height:520px;border:0;display:block"></iframe></div>
+   <div class="hint" style="padding:0 4px"><a href="panel-electrico.html" target="_blank">Abrir el panel eléctrico en pantalla completa</a>.</div>`;
+  $('#v-camioneta').innerHTML=h;return;}
+
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi"><div class="l">Odómetro</div><div class="v">${n0(odo)}<small> mi</small></div>
+   <div class="d">${n0(c.millas)} millas de viaje · ${n0(c.kmReal)} km</div></div>
+  <div class="kpi ${c.mpgReal==null?'':sem(c.mpgReal,c.mpgPlan,c.mpgPlan-1.5)}"><div class="l">Consumo</div>
+   <div class="v">${c.mpgReal?n1(c.mpgReal):'—'}<small> MPG</small></div><div class="d">Plan: ${n1(c.mpgPlan)}</div></div>
+  <div class="kpi pu"><div class="l">Gastado en el auto</div><div class="v">${usd((c.byCat.auto||0))}</div>
+   <div class="d">sin contar nafta (${usd(c.byCat.nafta||0)})</div></div>
+  <div class="kpi ${inc.filter(i=>!i.solved).length?'warn':'ok'}"><div class="l">Incidentes abiertos</div>
+   <div class="v">${inc.filter(i=>!i.solved).length}</div><div class="d">${inc.length} en total</div></div></div>`;
+
+ h+=`<div class="sec-t">Próximos services</div><div class="card">`;
+ if(!odo)h+=`<div class="muted">Cargá el odómetro inicial en Ajustes para calcular los vencimientos.</div>`;
+ MANT_SEED.forEach(m=>{
+  const ult=hist.filter(x=>x.tipo===m.id).sort((a,b)=>b.odo-a.odo)[0];
+  const base=ult?ult.odo:(c.odo0||odo);
+  const prox=base+m.cada,falta=prox-odo,pct=Math.max(0,Math.min(100,(1-falta/m.cada)*100));
+  const g=falta<0?'bad':falta<m.cada*.15?'warn':'ok';
+  h+=`<div class="li"><div class="ic">${m.e}</div>
+   <div class="m"><b>${esc(m.t)}</b><span>${ult?'último a las '+n0(ult.odo)+' mi':'sin registro — se cuenta desde la salida'} · cada ${n0(m.cada)} mi</span>
+   <div class="bar" style="margin:5px 0 0"><i style="width:${pct}%;background:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})"></i></div></div>
+   <div class="a" style="color:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})">${falta<0?'VENCIDO':n0(falta)}<span>${falta<0?n0(-falta)+' mi de más':'millas'}</span></div>
+   <button class="x" onclick="modMant('${m.id}')">＋</button></div>`;});
+ h+=`</div>`;
+
+ h+=`<div class="sec-t">Historial de mantenimiento</div><div class="card">
+  ${hist.length?hist.map(m=>{const d=MANT_SEED.find(x=>x.id===m.tipo)||{t:m.tipo,e:'🔧'};
+   return `<div class="li"><div class="ic">${d.e}</div>
+   <div class="m"><b>${esc(d.t)}</b><span>${fDate(m.date)} · ${n0(m.odo)} mi${m.lugar?' · '+esc(m.lugar):''}${m.note?' — '+esc(m.note):''}</span></div>
+   <div class="a">${m.cost?usd(m.cost):'—'}</div>
+   <button class="x" onclick="delMant('${m.id}')">✕</button></div>`;}).join('')
+   :'<div class="muted">Sin registros todavía.</div>'}</div>`;
+
+ h+=`<div class="sec-t">Incidentes</div><div class="card">
+  <div class="btnrow" style="margin-bottom:10px"><button class="btn sm" onclick="modInc2()">＋ Registrar un incidente</button></div>
+  ${inc.length?inc.map(i=>`<div class="li">
+   <button class="x" style="font-size:18px;color:${i.solved?'var(--ok)':'var(--bad)'}" onclick="togInc2('${i.id}')">${i.solved?'☑':'⚠'}</button>
+   <div class="m"><b style="${i.solved?'opacity:.6':''}">${esc(i.what)}</b><span>${fDate(i.date)} · ${n0(i.odo)} mi${i.note?' — '+esc(i.note):''}</span></div>
+   <div class="a">${i.cost?usd(i.cost):'—'}</div><button class="x" onclick="delInc2('${i.id}')">✕</button></div>`).join('')
+   :'<div class="muted">Ningún incidente. Ojalá siga así.</div>'}
+  <div class="hint">Anotá también los sustos que no costaron plata: un ruido raro en Guatemala es la pista del problema que aparece en Perú.</div></div>`;
+ $('#v-camioneta').innerHTML=h;}
+function modMant(tipo){
+ const c=calc(),d=MANT_SEED.find(x=>x.id===tipo)||{t:tipo};
+ openMod(`<h2>🔧 ${esc(d.t)}</h2>
+  <div class="row"><div><label>Fecha</label><input id="mD" type="date" value="${today()}"></div>
+   <div><label>Odómetro (mi)</label><input id="mO" type="number" value="${c.odoNow||''}"></div></div>
+  <div class="row mt"><div><label>Costo USD</label><input id="mC" type="number" step="0.01"></div>
+   <div><label>Dónde</label><input id="mL" placeholder="taller, ciudad"></div></div>
+  <div class="mt"><label>Notas</label><input id="mN"></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveMant('${tipo}')">Guardar</button></div>`);}
+function saveMant(tipo){const id=uid();
+ REAL.mant[id]={id,tipo,date:$('#mD').value||today(),odo:+$('#mO').value||0,cost:+$('#mC').value||0,
+  lugar:$('#mL').value,note:$('#mN').value,ua:now()};
+ saveReal();closeMod();renderAll();}
+function delMant(id){if(!confirm('¿Borrar?'))return;REAL.mant[id]={...REAL.mant[id],del:true,ua:now()};saveReal();renderAll();}
+function modInc2(){
+ const c=calc();
+ openMod(`<h2>⚠️ Incidente</h2>
+  <div><label>Qué pasó</label><input id="xW" autofocus></div>
+  <div class="row mt"><div><label>Fecha</label><input id="xD" type="date" value="${today()}"></div>
+   <div><label>Odómetro</label><input id="xO" type="number" value="${c.odoNow||''}"></div>
+   <div><label>Costo USD</label><input id="xC" type="number" step="0.01"></div></div>
+  <div class="mt"><label>Detalle</label><textarea id="xN" rows="3"></textarea></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="saveInc2()">Guardar</button></div>`);}
+function saveInc2(){const w=$('#xW').value.trim();if(!w)return;const id=uid();
+ REAL.inc2[id]={id,what:w,date:$('#xD').value||today(),odo:+$('#xO').value||0,cost:+$('#xC').value||0,
+  note:$('#xN').value,solved:false,ua:now()};saveReal();closeMod();renderAll();}
+function togInc2(id){const i=REAL.inc2[id];if(i){i.solved=!i.solved;i.ua=now();saveReal();renderAll();}}
+function delInc2(id){if(!confirm('¿Borrar?'))return;REAL.inc2[id]={...REAL.inc2[id],del:true,ua:now()};saveReal();renderAll();}
+
+/* --------------------------------------------------------------------------
+   GUITARRA
+   -------------------------------------------------------------------------- */
+let recorder=null,recChunks=[],recSong=null;
+function renderGuitarra(){
+ const c=calc(),ss=Object.values(REAL.songs).filter(s=>!s.del).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const listas=ss.filter(s=>s.st==='lista');
+ const paises=[...new Set(ss.map(s=>s.pais).filter(Boolean))];
+ let h='';
+ h+=`<div class="kpis" style="margin-bottom:14px">
+  <div class="kpi pu"><div class="l">Canciones aprendidas</div><div class="v">${listas.length}</div>
+   <div class="d">${ss.length-listas.length} en proceso</div></div>
+  <div class="kpi pu"><div class="l">Países con canción</div><div class="v">${paises.length}</div>
+   <div class="d">${esc(paises.slice(0,3).join(' · '))}</div></div>
+  <div class="kpi pu"><div class="l">Grabaciones</div><div class="v">${ss.filter(s=>s.audio||s.video).length}</div>
+   <div class="d">audio propio o link de video</div></div>
+  <div class="kpi pu"><div class="l">Ritmo</div><div class="v">${c.dayN?n1(listas.length/(c.dayN/30)):0}<small>/mes</small></div>
+   <div class="d">canciones terminadas por mes</div></div></div>`;
+
+ h+=`<div class="btnrow" style="margin-bottom:12px"><button class="btn b" onclick="modSong()">＋ Nueva canción</button></div>`;
+ if(!ss.length)h+=`<div class="card"><div class="muted">Todavía no hay canciones. Cada una guarda dónde y cuándo la aprendiste — al final del viaje es un mapa musical de la ruta.</div></div>`;
+
+ h+=`<div class="grid">`;
+ ss.forEach(s=>{
+  const busca=encodeURIComponent(s.n+' '+(s.artista||'')+' acordes');
+  h+=`<div class="card" style="margin:0"><div style="display:flex;gap:8px;align-items:baseline">
+   <div style="flex:1"><b style="font-size:15.5px">${esc(s.n)}</b>
+   <div class="muted">${esc(s.artista||'')}</div></div>
+   <span class="tag ${s.st==='lista'?'ok':s.st==='aprendiendo'?'warn':''}">${esc(s.st)}</span></div>
+   <div class="muted" style="margin-top:6px">${s.date?fDate(s.date):''}${s.pais?' · '+esc(s.pais):''}${s.lugar?' · '+esc(s.lugar):''}</div>
+   ${s.note?`<div class="note">${esc(s.note)}</div>`:''}
+   <div class="btnrow mt">
+    ${s.acordes?`<a class="btn sm" target="_blank" href="${esc(s.acordes)}">🎼 Acordes</a>`
+     :`<a class="btn sm" target="_blank" href="https://www.lacuerda.net/buscar/?q=${busca}">🔎 Buscar acordes</a>`}
+    ${s.video?`<a class="btn sm" target="_blank" href="${esc(s.video)}">▶️ Video</a>`:''}
+    <button class="btn sm" onclick="recToggle('${s.id}')" id="rec-${s.id}">${recSong===s.id?'⏹ Parar':'🎙️ Grabar'}</button>
+    ${s.audio?`<button class="btn sm" onclick="playSong('${s.id}')">🔊 Escuchar</button>`:''}
+    <button class="btn sm" onclick="modSong('${s.id}')">✏️</button></div>
+   <audio id="au-${s.id}" style="display:none;width:100%;margin-top:8px" controls></audio></div>`;});
+ h+=`</div>`;
+ h+=`<div class="hint" style="padding:8px 4px">El botón de grabar usa el micrófono del teléfono y guarda el audio en este dispositivo (no se sube a ningún lado). Para un video que quieras mostrar, subilo a YouTube o Instagram y pegá el link en la canción — así lo podés compartir y no ocupa lugar.</div>`;
+ $('#v-guitarra').innerHTML=h;}
+function modSong(id){
+ const s=id?REAL.songs[id]:{};
+ openMod(`<h2>${id?'Editar':'Nueva'} canción</h2>
+  <div class="row"><div><label>Canción</label><input id="sN" value="${esc(s.n||'')}" autofocus></div>
+   <div><label>Artista</label><input id="sA" value="${esc(s.artista||'')}"></div></div>
+  <div class="row mt"><div><label>Estado</label><select id="sS">
+   ${['quiero aprender','aprendiendo','lista'].map(x=>`<option ${s.st===x?'selected':''}>${x}</option>`).join('')}</select></div>
+   <div><label>Fecha</label><input id="sD" type="date" value="${s.date||today()}"></div></div>
+  <div class="row mt"><div><label>País</label><input id="sP" value="${esc(s.pais||(planStopFor(today())||{}).country||'')}"></div>
+   <div><label>Dónde</label><input id="sL" value="${esc(s.lugar||'')}" placeholder="camping, fogón, playa"></div></div>
+  <div class="mt"><label>Link a los acordes</label><input id="sC" value="${esc(s.acordes||'')}" placeholder="lacuerda.net / ultimate-guitar"></div>
+  <div class="mt"><label>Link a un video tuyo tocándola</label><input id="sV" value="${esc(s.video||'')}" placeholder="YouTube, Instagram, Drive"></div>
+  <div class="mt"><label>Nota</label><input id="sT" value="${esc(s.note||'')}" placeholder="capo 2, la aprendí con el chileno de Uyuni…"></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  ${id?`<button class="btn" onclick="delSong('${id}')">Borrar</button>`:''}
+  <button class="btn p" style="flex:1" onclick="saveSong(${id?"'"+id+"'":'null'})">Guardar</button></div>`);}
+function saveSong(id){
+ const n=$('#sN').value.trim();if(!n)return;
+ const k=id||uid(),prev=REAL.songs[k]||{};
+ REAL.songs[k]={...prev,id:k,n,artista:$('#sA').value,st:$('#sS').value,date:$('#sD').value,
+  pais:$('#sP').value,lugar:$('#sL').value,acordes:$('#sC').value,video:$('#sV').value,note:$('#sT').value,ua:now()};
+ saveReal();closeMod();renderAll();}
+function delSong(id){if(!confirm('¿Borrar la canción?'))return;
+ REAL.songs[id]={...REAL.songs[id],del:true,ua:now()};saveReal();closeMod();renderAll();}
+async function recToggle(id){
+ if(recSong===id&&recorder){recorder.stop();return;}
+ if(!navigator.mediaDevices){alert('Este navegador no permite grabar audio.');return;}
+ try{
+  const st=await navigator.mediaDevices.getUserMedia({audio:true});
+  recChunks=[];recorder=new MediaRecorder(st);recSong=id;
+  recorder.ondataavailable=e=>recChunks.push(e.data);
+  recorder.onstop=async()=>{
+   st.getTracks().forEach(t=>t.stop());
+   const b=new Blob(recChunks,{type:recorder.mimeType||'audio/webm'});
+   const fr=new FileReader();
+   fr.onload=async()=>{const k='song_'+id;await blobSave(k,fr.result);
+    REAL.songs[id]={...REAL.songs[id],audio:k,ua:now()};saveReal();recorder=null;recSong=null;renderAll();};
+   fr.readAsDataURL(b);};
+  recorder.start();renderGuitarra();
+ }catch(e){alert('No se pudo acceder al micrófono.');recSong=null;}}
+async function playSong(id){
+ const u=await blobGet('song_'+id);if(!u)return;
+ const a=$('#au-'+id);a.src=u;a.style.display='block';a.play();}
+
+/* --------------------------------------------------------------------------
+   AJUSTES
+   -------------------------------------------------------------------------- */
+function renderAjustes(){
+ const c=calc();
+ let h=`<div class="grid">
+  <div class="card"><h3>🚙 Odómetro inicial</h3>
+   <label>Millas en el tablero el día de la salida</label>
+   <input type="number" inputmode="numeric" value="${REAL.cfg.odo0||''}" onchange="REAL.cfg.odo0=parseFloat(this.value)||null;saveReal();renderAll()">
+   <div class="note">Sin esto no hay km reales, ni MPG, ni vencimientos de service. Cargalo antes de arrancar.</div></div>
+  <div class="card"><h3>💾 Respaldo</h3>
+   <div class="btnrow"><button class="btn b" onclick="exportJson()">Exportar todo</button>
+   <button class="btn" onclick="document.getElementById('imp').click()">Importar</button></div>
+   <input type="file" id="imp" accept=".json" style="display:none" onchange="importJson(this)">
+   <div class="hint">Las fotos y las grabaciones viven solo en este dispositivo. El resto se sincroniza con el otro teléfono. Exportá cada tanto y guardalo en Drive.</div></div></div>`;
+ h+=`<div class="card"><h3>💱 Monedas <span class="r">1 USD = ?</span></h3><table>
+  ${Object.keys(FX_SEED).filter(k=>k!=='USD').map(k=>{const f=REAL.fx[k]||{};
+   return `<tr><td style="width:60px"><b>${k}</b></td>
+   <td><input type="number" step="0.0001" value="${f.r||FX_SEED[k]}" onchange="setFx('${k}',this.value)"></td>
+   <td style="width:96px" class="n"><span class="tag ${f.ok?'ok':'warn'}">${f.ok?'confirmado':'estimado'}</span></td></tr>`;}).join('')}</table>
+  <div class="note">Los estimados son de agosto 2026 y pueden estar muy lejos, sobre todo el peso argentino. Confirmá cada moneda la primera vez que cruzás. Cada gasto guarda el TC del momento, así que corregir esto no cambia lo ya cargado.</div></div>`;
+ h+=`<div class="card"><h3>ℹ️ Estado</h3><table>
+  <tr><td>Plan cargado</td><td class="n">${planStops().length} paradas</td></tr>
+  <tr><td>Días registrados</td><td class="n">${lDays().length}</td></tr>
+  <tr><td>Movimientos</td><td class="n">${c.exps.length+c.fuels.length+c.incs.length}</td></tr>
+  <tr><td>Sincronización</td><td class="n">${SYNC==='on'?'activa':'local'}</td></tr></table>
+  <div class="hint">El plan es de solo lectura: esta app nunca lo modifica. Para cambiar la ruta o el presupuesto, usá la app de planificación.</div></div>`;
+ $('#v-ajustes').innerHTML=h;}
+function setFx(k,v){REAL.fx[k]={r:parseFloat(v)||FX_SEED[k],ok:true,ua:now()};saveReal();renderAll();}
+function exportJson(){
+ const b=new Blob([JSON.stringify({real:REAL,plan:PLAN,exported:new Date().toISOString()},null,1)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vida-ruta-'+today()+'.json';a.click();}
+function importJson(i){const f=i.files[0];if(!f)return;const fr=new FileReader();
+ fr.onload=()=>{try{const d=JSON.parse(fr.result);if(d.real){REAL=mergeReal(REAL,d.real);saveReal();renderAll();alert('Importado.');}}catch(e){alert('Archivo inválido.');}};
+ fr.readAsText(f);}
+
+/* --------------------------------------------------------------------------
+   RENDER + NAV
+   -------------------------------------------------------------------------- */
+const R={tablero:renderTablero,hoy:renderHoy,ruta:renderRuta,gastos:renderGastos,ingresos:renderIngresos,
+ tramites:renderTramites,cocina:renderCocina,rutinas:renderRutinas,samineta:renderSamineta,
+ camioneta:renderCamioneta,guitarra:renderGuitarra,ajustes:renderAjustes};
+function renderHeader(){
+ const c=calc();
+ if(!c.B.start){$('#hdDay').textContent='—';$('#hdSub').textContent='esperando el plan';return;}
+ $('#hdDay').textContent=c.started?`Día ${c.dayN} / ${c.B.days}`:`Faltan ${dDiff(c.t,c.B.start)} días`;
+ const st=c.curStop||c.planHoy;
+ $('#hdSub').textContent=st?st.country:'';}
+function renderAll(){renderHeader();(R[VIEW]||(()=>{}))();}
+$('#tabs').innerHTML=TABS.map(([k,e,t])=>`<button data-v="${k}" class="${k==='tablero'?'on':''}">${e}${t?' '+t:''}</button>`).join('');
+document.querySelectorAll('#tabs button').forEach(b=>{
+ b.onclick=()=>{VIEW=b.dataset.v;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+VIEW));
+  window.scrollTo(0,0);renderAll();};});
+
+/* --------------------------------------------------------------------------
+   ARRANQUE
+   -------------------------------------------------------------------------- */
+(function boot(){
+ PLAN=lsGet(LS_PLAN,PLAN);
+ REAL=Object.assign(JSON.parse(JSON.stringify(REAL_EMPTY)),lsGet(LS_REAL,{}));
+ KEYS.forEach(k=>{if(!REAL[k])REAL[k]={};});
+ if(!REAL.cfg)REAL.cfg={odo0:null,ua:0};
+ try{YO=localStorage.getItem('vr_yo')||null;}catch(e){}
+ if(YO&&!PERSONAS[YO])YO=null;
+ // Semillas: solo se cargan la primera vez. Si borrás algo, no vuelve.
+ if(!REAL.cfg.seed1){
+  IDEAS_SEED.forEach(i=>{if(!REAL.ideas[i.id])REAL.ideas[i.id]={...i,ua:now()};});
+  REAL.cfg.seed1=true;
+ }
+ // seed2: hábitos, tareas y checklist de Samy del panel Ruta Sur. Va aparte de
+ // seed1 para que quien ya tenía la versión anterior de la app los reciba igual.
+ if(!REAL.cfg.seed2){
+  Object.keys(REAL.habitos).forEach(k=>{if(!REAL.habitos[k]||!REAL.habitos[k].q)delete REAL.habitos[k];});
+  HABITOS_SEED.forEach(x=>{if(!REAL.habitos[x.id])REAL.habitos[x.id]={...x,ua:now()};});
+  TAREAS_SEED.forEach(x=>{if(!REAL.tareas[x.id])REAL.tareas[x.id]={...x,ua:now()};});
+  SAMY_SEED.forEach((t,i)=>{const id='sy'+i;if(!REAL.samy[id])REAL.samy[id]={id,t,ok:false,ua:now()};});
+  REAL.hlog={};   // el formato viejo era por fecha; el nuevo es por fecha|persona
+  REAL.cfg.seed2=true;
+ }
+ setSync('off','local');
+ renderAll();
+ lsSet(LS_REAL,REAL);
+ initFirebase();
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

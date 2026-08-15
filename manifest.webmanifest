@@ -1,0 +1,41 @@
+{
+  "name": "Vida de Ruta — La Samineta",
+  "short_name": "Vida de Ruta",
+  "description": "App offline para registrar la Ruta Sur: gastos, hitos, camión, comidas y mucho más",
+  "start_url": "/vida-ruta_3.html",
+  "display": "standalone",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e2a32",
+  "background_color": "#f4f4f2",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["travel", "utilities"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f4f4f2' width='540' height='720'/><rect fill='%231e2a32' width='540' height='80'/><text x='270' y='45' text-anchor='middle' fill='%23fff' font-size='20' font-weight='bold'>Vida de Ruta</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}
