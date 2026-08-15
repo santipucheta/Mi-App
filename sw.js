@@ -1,76 +1,64 @@
-const CACHE_NAME = 'vida-ruta-v1';
+/* Vida de Ruta - service worker
+   v2: nunca devuelve undefined y reemplaza cualquier version anterior */
+const CACHE = 'vida-ruta-v2';
 
-// Instalar SW
-self.addEventListener('install', event => {
-  self.skipWaiting();
-});
+self.addEventListener('install', () => self.skipWaiting());
 
-// Activar SW
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Estrategia: Red primero, luego caché
-self.addEventListener('fetch', event => {
-  const { request } = event;
+self.addEventListener('fetch', e => {
+  const req = e.request;
 
-  if (request.method !== 'GET') {
-    return;
-  }
+  // Solo GET del mismo origen. Todo lo demas pasa de largo.
+  if (req.method !== 'GET') return;
+  let url;
+  try { url = new URL(req.url); } catch (_) { return; }
+  if (url.origin !== self.location.origin) return;
 
-  // Para HTML: red primero
-  if (request.url.includes('.html') || request.url.endsWith('/')) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, responseToCache).catch(() => {});
-            });
-            return response;
+  const esPagina = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/';
+
+  if (esPagina) {
+    // Red primero. Si no hay red: lo cacheado, y si no, la raiz.
+    e.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res && res.ok) {
+            const copia = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copia)).catch(() => {});
           }
-          return caches.match(request) || response;
+          return res;
         })
-        .catch(() => {
-          return caches.match(request);
-        })
+        .catch(() =>
+          caches.match(req)
+            .then(hit => hit || caches.match('/'))
+            .then(hit => hit || new Response(
+              '<meta charset="utf-8"><h2 style="font-family:system-ui;padding:24px">Sin conexion</h2>',
+              { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+            ))
+        )
     );
     return;
   }
 
-  // Para otros recursos: caché primero
-  event.respondWith(
-    caches.match(request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(request).then(response => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
+  // Recursos: cache primero, red despues.
+  e.respondWith(
+    caches.match(req).then(hit => {
+      if (hit) return hit;
+      return fetch(req)
+        .then(res => {
+          if (res && res.ok) {
+            const copia = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copia)).catch(() => {});
           }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache).catch(() => {});
-          });
-          return response;
-        });
-      })
-      .catch(() => {
-        // Offline - retornar lo que tengamos cacheado
-        return caches.match(request);
-      })
+          return res;
+        })
+        .catch(() => new Response('', { status: 504 }));
+    })
   );
 });
