@@ -1,64 +1,54 @@
-/* Vida de Ruta - service worker
-   v2: nunca devuelve undefined y reemplaza cualquier version anterior */
-const CACHE = 'vida-ruta-v2';
+/* Service worker de Vida de Ruta.
+   Objetivo: que la app abra SIN SEÑAL. Cachea el shell (HTML + Leaflet) en la
+   instalación y sirve desde caché cuando la red falla.
+   Subí el número de VERSION cada vez que cambies vida-ruta.html, si no el
+   celular sigue mostrando la versión vieja. */
+const VERSION = 'vr-v7';
+const SHELL = [
+  './vida-ruta.html',
+  './cocina.html',
+  './panel-electrico.html',
+  './croquis-motor.jpg',
+  './manifest.webmanifest',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+  'https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js'
+];
 
-self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(VERSION)
+      // addAll falla entero si un recurso falla; los agrego de a uno para que
+      // una CDN caída no rompa la instalación completa.
+      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
+  );
+});
 
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
-  const req = e.request;
+  const url = e.request.url;
+  // Firestore y los tiles del mapa NUNCA se cachean: son datos vivos.
+  if (url.includes('firestore.googleapis.com') || url.includes('basemaps.cartocdn.com')) return;
+  if (e.request.method !== 'GET') return;
 
-  // Solo GET del mismo origen. Todo lo demas pasa de largo.
-  if (req.method !== 'GET') return;
-  let url;
-  try { url = new URL(req.url); } catch (_) { return; }
-  if (url.origin !== self.location.origin) return;
-
-  const esPagina = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/';
-
-  if (esPagina) {
-    // Red primero. Si no hay red: lo cacheado, y si no, la raiz.
-    e.respondWith(
-      fetch(req)
-        .then(res => {
-          if (res && res.ok) {
-            const copia = res.clone();
-            caches.open(CACHE).then(c => c.put(req, copia)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() =>
-          caches.match(req)
-            .then(hit => hit || caches.match('/'))
-            .then(hit => hit || new Response(
-              '<meta charset="utf-8"><h2 style="font-family:system-ui;padding:24px">Sin conexion</h2>',
-              { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-            ))
-        )
-    );
-    return;
-  }
-
-  // Recursos: cache primero, red despues.
+  // Network-first con fallback a caché: si hay señal ves lo último,
+  // si no hay señal la app abre igual.
   e.respondWith(
-    caches.match(req).then(hit => {
-      if (hit) return hit;
-      return fetch(req)
-        .then(res => {
-          if (res && res.ok) {
-            const copia = res.clone();
-            caches.open(CACHE).then(c => c.put(req, copia)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => new Response('', { status: 504 }));
-    })
+    fetch(e.request)
+      .then(r => {
+        const copy = r.clone();
+        caches.open(VERSION).then(c => c.put(e.request, copy)).catch(() => {});
+        return r;
+      })
+      .catch(() => caches.match(e.request).then(r => r || caches.match('./vida-ruta.html')))
   );
 });

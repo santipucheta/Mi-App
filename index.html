@@ -163,7 +163,6 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   <div class="view" id="v-tramites"></div>
   <div class="view" id="v-cocina"></div>
   <div class="view" id="v-rutinas"></div>
-  <div class="view" id="v-samineta"></div>
   <div class="view" id="v-camioneta"></div>
   <div class="view" id="v-guitarra"></div>
   <div class="view" id="v-ajustes"></div>
@@ -191,7 +190,7 @@ const ROAD_FACTOR=1.3,KM_PER_MI=1.609344,L_PER_GAL=3.785411784;
 const TABS=[
  ["tablero","🎛️","Tablero"],["hoy","📍","Hoy"],["ruta","🗺️","Ruta"],["gastos","💰","Gastos"],
  ["ingresos","💵","Ingresos"],["tramites","📄","Trámites"],["cocina","🍳","Cocina"],
- ["rutinas","🔁","Rutinas"],["samineta","📸","Samineta"],["camioneta","🚙","Camioneta"],
+ ["rutinas","🔁","Rutinas"],["camioneta","🚙","Camioneta"],
  ["guitarra","🎸","Guitarra"],["ajustes","⚙️",""]
 ];
 
@@ -217,6 +216,25 @@ const CATS={nafta:{t:"Nafta",e:"⛽"},comida:{t:"Comida",e:"🍽️"},dormir:{t:
  entretenimiento:{t:"Paseos",e:"🎟️"},auto:{t:"Auto",e:"🔧"},tramites:{t:"Trámites",e:"📄"},
  peajes:{t:"Peajes",e:"🛣️"},otros:{t:"Otros",e:"🛒"}};
 const CORRIENTE=["nafta","comida","dormir","otros"];
+
+/* HITO vs PARTIDA
+   El presupuesto del plan mezcla dos cosas distintas bajo el mismo nombre de
+   "costos únicos":
+     · HITO    — pasa una vez, en una fecha: el barco del Darién, el ferry,
+                 la entrada a Tikal. Se marca cuando se paga y listo.
+     · PARTIDA — es una bolsa de plata para algo que va a pasar muchas veces:
+                 peajes, mantenimiento, tasas de frontera. No se "completa":
+                 se va consumiendo gasto por gasto.
+   Tratar una partida como hito obliga a cargar todos los peajes de México en
+   un solo movimiento, que es exactamente el problema. Por defecto son partida
+   las categorías de abajo, pero cada ítem se puede cambiar a mano. */
+const PARTIDA_CATS=["mantenimiento","peajes"];
+// Contra qué categoría de gasto se descuenta cada partida.
+const PARTIDA_GASTO={mantenimiento:["auto"],peajes:["peajes"],tramites:["tramites"],
+ entretenimiento:["entretenimiento"],pasajes:["otros"]};
+function esPartida(o){
+ const r=(REAL.envel||{})[o.name];
+ return (r&&typeof r.v==='boolean')?r.v:PARTIDA_CATS.includes(o.cat||'');}
 
 const GATES=[
  {id:"mex",t:"Cruce a México (Tecate/Mexicali)",m:/tecate|mexicali/i,note:"FMM + TIP Banjercito + certificado de salud de Samy emitido pocos días antes."},
@@ -362,17 +380,7 @@ const SAMY_SEED=["Antirrábica vigente con certificado","Microchip ISO 11784/117
  "Bebedero y comedero de viaje","Stock de alimento para 3 semanas","Botiquín canino",
  "Chapa con contacto y foto reciente","Chequeo veterinario presalida"];
 
-// Series recurrentes de contenido: el formato repetible es lo que sostiene una
-// cuenta. Todas están atadas a datos que la app YA calcula.
-const SERIES_SEED=[
- {id:"s1",t:"Día X de 131",fmt:"Reel",note:"Un día cualquiera de ruta en 20 segundos. La serie ancla: la gente vuelve por el número."},
- {id:"s2",t:"Cuánto costó cruzar esta frontera",fmt:"Carrusel",note:"El desglose real: TIP, seguro, fumigación, coimas, horas. Nadie publica esto y todos lo buscan."},
- {id:"s3",t:"Dónde durmió Samy hoy",fmt:"Foto",note:"El personaje de la cuenta es el perro. Es la serie más fácil de sostener y la que más engancha."},
- {id:"s4",t:"Cuánto gastamos esta semana",fmt:"Carrusel",note:"Sale directo de la app. Números reales, sin redondear para arriba."},
- {id:"s5",t:"Qué cocinamos hoy en la camioneta",fmt:"Reel",note:"Cocina de camper: audiencia enorme y cero competencia en español."},
- {id:"s6",t:"Lo que se rompió esta semana",fmt:"Reel",note:"La honestidad es el diferencial. Todo el mundo muestra el atardecer, nadie el radiador."},
- {id:"s7",t:"La canción de este país",fmt:"Reel",note:"Vos tocando algo del lugar donde estás. Une la guitarra con el viaje."}
-];
+
 
 // Plan de mantenimiento por millas de la F-150 5.0 V8 cargada con camper.
 // Intervalos cortos a propósito: peso extra, calor, polvo y nafta de calidad variable.
@@ -456,7 +464,7 @@ function inferCountry(stop,prev){
    -------------------------------------------------------------------------- */
 let PLAN={stops:[],items:[],budget:null,loaded:false};
 const REAL_EMPTY={days:{},exp:{},fuel:{},inc:{},ideas:{},tram:{},gates:{},oneoff:{},fx:{},
- habitos:{},tareas:{},hlog:{},tlog:{},samy:{},ideasC:{},mant:{},inc2:{},songs:{},chk:{},
+ habitos:{},tareas:{},hlog:{},tlog:{},samy:{},mant:{},inc2:{},songs:{},chk:{},envel:{},
  cfg:{odo0:null,ua:0}};
 // Quién está usando ESTE teléfono. No se sincroniza a propósito: el celular de
 // Martín es Martín y el de Lula es Lula.
@@ -467,13 +475,19 @@ let VIEW="tablero",MAP=null,SYNC="off",FB_DB=null;
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('LS lleno',e);}}
 function saveReal(push=true){REAL.cfg.ua=now();lsSet(LS_REAL,REAL);if(push)pushReal();}
-const KEYS=["days","exp","fuel","inc","ideas","tram","gates","oneoff","fx","habitos","tareas","hlog","tlog","samy","ideasC","mant","inc2","songs","chk"];
+const KEYS=["days","exp","fuel","inc","ideas","tram","gates","oneoff","fx","habitos","tareas","hlog","tlog","samy","mant","inc2","songs","chk","envel"];
 function mergeReal(local,remote){
  if(!remote)return local;
  const out=JSON.parse(JSON.stringify(local));
+ // Corte por reset: si se borró todo, hay que ignorar los registros remotos
+ // anteriores al borrado. Si no, el primer onSnapshot los devuelve a la vida
+ // (el merge los ve como "nuevos" porque localmente ya no existen).
+ const cut=out.cfg&&out.cfg.resetAt||0;
  KEYS.forEach(k=>{const r=remote[k]||{};out[k]=out[k]||{};
-  Object.keys(r).forEach(id=>{const a=out[k][id],b=r[id];if(!a||(b&&(b.ua||0)>(a.ua||0)))out[k][id]=b;});});
- if(remote.cfg&&(remote.cfg.ua||0)>(out.cfg.ua||0))out.cfg=remote.cfg;
+  Object.keys(r).forEach(id=>{const a=out[k][id],b=r[id];
+   if(!b||(b.ua||0)<cut)return;
+   if(!a||(b.ua||0)>(a.ua||0))out[k][id]=b;});});
+ if(remote.cfg&&(remote.cfg.ua||0)>(out.cfg.ua||0)&&(remote.cfg.resetAt||0)>=cut)out.cfg=remote.cfg;
  return out;}
 function setSync(s,t){SYNC=s;const e=$('#sync');e.className='sync '+(s==='on'?'on':'');e.textContent=t||(s==='on'?'sinc':'local');}
 let pt=null;
@@ -557,7 +571,10 @@ function calc(){
  const exps=lExp(),fuels=lFuel(),incs=lInc();
  let realCorr=0,realTotal=0;const byCat={};Object.keys(CATS).forEach(c=>byCat[c]=0);
  exps.forEach(e=>{const u=e.usd||0;realTotal+=u;byCat[e.cat]=(byCat[e.cat]||0)+u;
-  if(CORRIENTE.includes(e.cat))realCorr+=u;
+  // Un gasto ligado a un costo único NUNCA entra en el corriente, aunque su
+  // categoría sea "otros": el ferry no es un gasto del día a día y mezclarlo
+  // rompe el $/día, que es el único número sobre el que se puede actuar.
+  if(CORRIENTE.includes(e.cat)&&!e.oneOff)realCorr+=u;
   const r=REGION_BY_COUNTRY[e.country];if(r&&byReg[r])byReg[r].real+=u;});
  fuels.forEach(f=>{const u=f.usd||0;realTotal+=u;realCorr+=u;byCat.nafta+=u;
   const r=REGION_BY_COUNTRY[f.country];if(r&&byReg[r])byReg[r].real+=u;});
@@ -570,9 +587,30 @@ function calc(){
  const planOneOff=oneOff.reduce((a,o)=>a+(o.amount||0),0);
  const planSub=planDaily+planFuel+planOneOff,planCont=planSub*contPct/100,planTotal=planSub+planCont;
 
- let uniPag=0,uniPend=0;
- oneOff.forEach(o=>{const s=REAL.oneoff[o.name];
-  if(s&&s.paid)uniPag+=(s.costUsd!=null?s.costUsd:o.amount||0);else uniPend+=(o.amount||0);});
+ // --- Hitos: lo pagado sale de los gastos ligados al ítem. Un solo origen. ---
+ const uniReal={};
+ exps.forEach(e=>{if(e.oneOff)uniReal[e.oneOff]=(uniReal[e.oneOff]||0)+(e.usd||0);});
+ const hitos=oneOff.filter(o=>!esPartida(o));
+ let uniPag=0,uniPend=0,uniEst=0;
+ hitos.forEach(o=>{
+  if(uniReal[o.name]!=null){uniPag+=uniReal[o.name];uniEst+=(o.amount||0);}
+  else uniPend+=(o.amount||0);});
+
+ // --- Partidas: bolsas que se consumen con gastos sueltos, no con un tilde. ---
+ const partidas={};
+ oneOff.filter(esPartida).forEach(o=>{
+  const k=o.cat||'otros';
+  if(!partidas[k])partidas[k]={cat:k,plan:0,real:0,items:[],movs:0};
+  partidas[k].plan+=(o.amount||0);partidas[k].items.push(o);});
+ Object.keys(partidas).forEach(k=>{
+  const cats=PARTIDA_GASTO[k]||[];
+  // Solo cuentan los gastos NO ligados a un hito: si un gasto ya se imputó a
+  // un ítem puntual, contarlo también acá sería contarlo dos veces.
+  exps.filter(e=>!e.oneOff&&cats.includes(e.cat)).forEach(e=>{
+   partidas[k].real+=(e.usd||0);partidas[k].movs++;});
+  // Lo que falta gastar de la bolsa también es plata comprometida.
+  uniPend+=Math.max(0,partidas[k].plan-partidas[k].real);
+  uniPag+=partidas[k].real;});
 
  const burn=realCorr/elapsed,burnPlan=planCorr/elapsed;
  const desvio=realCorr-planCorr,desvioPct=planCorr>0?desvio/planCorr*100:0;
@@ -606,7 +644,7 @@ function calc(){
 
  return{B,t,started,dayN,daysLeft,elapsed,P,exps,fuels,incs,income,incRate,
   planCorr,realCorr,realTotal,byCat,byReg,planTotal,planSub,planCont,planDaily,planFuel,planOneOff,contPct,
-  uniPag,uniPend,oneOff,burn,burnPlan,netBurn,desvio,desvioPct,disponible,colchon,runway,runwayOpt,runwayRatio,proyeccion,proyDesvio,
+  uniPag,uniPend,uniEst,uniReal,hitos,partidas,oneOff,burn,burnPlan,netBurn,desvio,desvioPct,disponible,colchon,runway,runwayOpt,runwayRatio,proyeccion,proyDesvio,
   odo0,odoNow,millas,kmReal,gal,mpgReal,mpgPlan,mpgImpacto,kmPlanTotal,planKm,curStop,planHoy,atraso,gates};}
 
 function sem(v,ok,warn,inv){return inv?(v<=ok?'ok':v<=warn?'warn':'bad'):(v>=ok?'ok':v>=warn?'warn':'bad');}
@@ -706,7 +744,7 @@ function setGate(id,s){REAL.gates[id]={status:s,ua:now()};saveReal();renderAll()
 /* --------------------------------------------------------------------------
    HOY
    -------------------------------------------------------------------------- */
-function dayRec(d){if(!REAL.days[d])REAL.days[d]={date:d,odo:null,stopIdx:null,place:"",sleepType:"",sleepName:"",note:"",moment:"",mood:"",photos:[],ua:now()};return REAL.days[d];}
+function dayRec(d){if(!REAL.days[d])REAL.days[d]={date:d,odo:null,stopIdx:null,place:"",sleepType:"",sleepName:"",ua:now()};return REAL.days[d];}
 function renderHoy(){
  const c=calc(),t=c.t,r=dayRec(t),P=c.P;
  const prev=(()=>{const d=lDays().filter(x=>x.odo&&x.date<t);return d.length?d[d.length-1].odo:c.odo0;})();
@@ -734,7 +772,8 @@ function renderHoy(){
 
  h+=`<div class="card"><h3>💸 Gastos de hoy <span class="r">${usd(tot)}${ih?' · ingresos '+usd(ih):''}</span></h3>
   <div class="chips">${Object.keys(CATS).map(k=>`<button class="chip" onclick="modExp('${k}')"><span class="e">${CATS[k].e}</span><span class="t">${CATS[k].t}</span></button>`).join('')}</div>
-  <div class="btnrow mt"><button class="btn b sm" onclick="modInc()">＋ Cargar un ingreso</button></div>
+  <div class="btnrow mt"><button class="btn b sm" onclick="modInc()">＋ Ingreso</button>
+   <button class="btn sm" onclick="modOneOff()">＋ Hito del plan <span class="tag warn" style="font-size:9.5px">${c.hitos.filter(o=>c.uniReal[o.name]==null).length}</span></button></div>
   ${gh.length?`<div class="mt">${gh.map(x=>{const f=x.qty!=null,k=f?'nafta':x.cat;
    return `<div class="li"><div class="ic">${CATS[k].e}</div>
    <div class="m"><b>${esc(f?((x.qty||0)+' '+(x.unit==='gal'?'gal':'L')+' de nafta'):(x.desc||CATS[k].t))}</b>
@@ -743,32 +782,17 @@ function renderHoy(){
    :'<div class="hint">Todavía no cargaste nada hoy.</div>'}
   ${!fxOk(cur)&&cur!=='USD'?`<div class="banner w mt">Estás en ${esc(country)} y el TC de ${cur} sigue siendo el estimado (${n1(fxRate(cur))}). <b>Confirmalo en Ajustes</b> o todos los gastos de este país van a estar mal.</div>`:''}</div>`;
 
+ // Un solo bloque para el día. Antes había tres campos que decían lo mismo
+ // (ánimo, bitácora y "momento") y una galería de fotos que no se sincronizaba
+ // ni se podía publicar. La foto la saca el celular; acá va lo que el celular
+ // no guarda: qué pasó, en una línea.
  const ST=["libre","camping","hostal","hotel","casa","otro"];
- h+=`<div class="grid">
-  <div class="card"><h3>🛏️ Dónde dormimos</h3>
-   <div class="seg">${ST.map(s=>`<button class="${r.sleepType===s?'on':''}" onclick="setDay('sleepType','${s}')">${s}</button>`).join('')}</div>
-   <div class="mt"><input placeholder="Nombre del lugar" value="${esc(r.sleepName)}" onchange="setDay('sleepName',this.value)"></div></div>
-  <div class="card"><h3>😊 Cómo estuvo el día</h3>
-   <div class="seg">${['😄','🙂','😐','😖'].map(m=>`<button class="${r.mood===m?'on':''}" onclick="setDay('mood','${m}')" style="font-size:20px">${m}</button>`).join('')}</div>
-   <textarea rows="2" class="mt" placeholder="Bitácora larga (opcional)" onchange="setDay('note',this.value)">${esc(r.note)}</textarea></div>
- </div>`;
+ h+=`<div class="card"><h3>🛏️ Dónde dormimos</h3>
+  <div class="seg">${ST.map(s=>`<button class="${r.sleepType===s?'on':''}" onclick="setDay('sleepType','${s}')">${s}</button>`).join('')}</div>
+  <div class="mt"><input placeholder="Nombre del lugar donde dormimos" value="${esc(r.sleepName)}" onchange="setDay('sleepName',this.value)"></div>
+</div>`;
 
- h+=`<div class="card"><h3>📸 El momento del día <span class="r">alimenta la pestaña Samineta</span></h3>
-  <textarea rows="2" placeholder="Una línea. Lo que contarías si te preguntan cómo estuvo hoy." onchange="setDay('moment',this.value)">${esc(r.moment)}</textarea>
-  <div class="ph" id="phBox"></div></div>`;
-
- $('#v-hoy').innerHTML=h;drawPhotos(t);}
-
-function drawPhotos(date){
- const b=$('#phBox');if(!b)return;const r=REAL.days[date]||{},ks=r.photos||[];
- b.innerHTML=ks.map(k=>`<img data-k="${k}" onclick="rmPhoto('${date}','${k}')">`).join('')+
-  `<label class="add">＋<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${date}',this)"></label>`;
- ks.forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});}
-async function addPhoto(d,i){const f=i.files&&i.files[0];if(!f)return;
- const u=await resize(f),k=d+'_'+uid();await blobSave(k,u);
- const r=dayRec(d);r.photos=(r.photos||[]).concat(k);r.ua=now();saveReal();drawPhotos(d);}
-async function rmPhoto(d,k){if(!confirm('¿Borrar esta foto?'))return;await blobDel(k);
- const r=dayRec(d);r.photos=(r.photos||[]).filter(x=>x!==k);r.ua=now();saveReal();drawPhotos(d);}
+ $('#v-hoy').innerHTML=h;}
 function setDay(f,v){const r=dayRec(today());r[f]=v;r.ua=now();saveReal();renderAll();}
 function setDayStop(v){const r=dayRec(today());r.stopIdx=v===''?null:parseInt(v,10);r.ua=now();saveReal();renderAll();}
 
@@ -777,13 +801,16 @@ function curNow(){const r=REAL.days[today()],P=planEnriched();
  const s=(r&&r.stopIdx!=null)?P[r.stopIdx]:planStopFor(today());
  const c=s?s.country:"Estados Unidos";
  return{country:c,cur:CUR_BY_COUNTRY[c]||"USD",gal:GAL_COUNTRIES.includes(c)};}
-function modExp(cat){
+let OO=null;   // costo único que se está cargando, si aplica
+function modExp(cat,oo){
+ OO=oo||null;
  const x=curNow(),f=cat==='nafta',cs=Object.keys(FX_SEED);
- openMod(`<h2>${CATS[cat].e} ${CATS[cat].t}</h2>
+ openMod(`<h2>${CATS[cat].e} ${OO?'Costo único':CATS[cat].t}</h2>
+  ${OO?`<div class="note" style="margin:0 0 12px">${esc(OO.oneOff)}<br>Estimado del plan: <b>${usd(OO.est)}</b></div>`:''}
   ${f?`<div class="row"><div><label>Cantidad</label><input id="fQty" type="number" step="0.01" inputmode="decimal" autofocus></div>
    <div><label>Unidad</label><select id="fUnit"><option value="gal" ${x.gal?'selected':''}>galones</option><option value="L" ${!x.gal?'selected':''}>litros</option></select></div></div>
    <div class="mt"><label>Odómetro al cargar (millas)</label><input id="fOdo" type="number" inputmode="numeric"></div>`
-  :`<div><label>¿Qué fue?</label><input id="eDesc" placeholder="${CATS[cat].t.toLowerCase()}…" autofocus></div>`}
+  :`<div><label>¿Qué fue?</label><input id="eDesc" value="${OO?esc(OO.oneOff.slice(0,60)):''}" placeholder="${CATS[cat].t.toLowerCase()}…" autofocus></div>`}
   <div class="row mt"><div><label>Monto</label><input id="eAmt" type="number" step="0.01" inputmode="decimal" oninput="modPrev()"></div>
   <div><label>Moneda</label><select id="eCur" onchange="modFx()">${cs.map(k=>`<option ${k===x.cur?'selected':''}>${k}</option>`).join('')}</select></div></div>
   <div class="row mt" id="fxRow"><div><label>Tipo de cambio (1 USD = ?)</label><input id="eRate" type="number" step="0.0001" inputmode="decimal" value="${fxRate(x.cur)}" oninput="modPrev()"></div>
@@ -805,12 +832,54 @@ function saveExp(cat){
   const qty=parseFloat(($('#fQty')||{}).value)||0,unit=($('#fUnit')||{}).value||'L',odo=parseFloat(($('#fOdo')||{}).value)||null;
   REAL.fuel[id]={...base,qty,unit,odo};
   if(odo){const r=dayRec(date);if(!r.odo||odo>r.odo){r.odo=odo;r.ua=now();}}
- }else REAL.exp[id]={...base,cat,desc:$('#eDesc').value||CATS[cat].t};
+ }else{
+  REAL.exp[id]={...base,cat,desc:$('#eDesc').value||CATS[cat].t,oneOff:OO?OO.oneOff:undefined};
+  if(OO)REAL.oneoff[OO.oneOff]={paid:true,expId:id,ua:now()};
+ }
+ OO=null;
  if(cur!=='USD'&&rate!==FX_SEED[cur])REAL.fx[cur]={r:rate,ok:true,ua:now()};
  saveReal();closeMod();renderAll();}
 function delRec(k,id){if(!confirm('¿Borrar?'))return;
  const m=k==='fuel'?REAL.fuel:k==='inc'?REAL.inc:REAL.exp;
- if(m[id]){m[id].del=true;m[id].ua=now();}saveReal();renderAll();}
+ if(m[id]){
+  // Si el gasto estaba ligado a un costo único, el ítem del plan vuelve a
+  // quedar pendiente. Si no, el checklist mentiría.
+  if(m[id].oneOff&&REAL.oneoff[m[id].oneOff])REAL.oneoff[m[id].oneOff]={paid:false,ua:now()};
+  m[id].del=true;m[id].ua=now();
+ }
+ saveReal();renderAll();}
+
+/* Costos únicos: se cargan como un gasto real más, ligados al ítem del plan.
+   Así aparecen en Movimientos, entran en el total gastado y el plan-vs-real
+   sale solo. Antes eran un checklist paralelo que no tocaba ningún número. */
+function togPartida(name){
+ const o=(PLAN.budget.oneOff||[]).find(x=>x.name===name);if(!o)return;
+ REAL.envel=REAL.envel||{};
+ REAL.envel[name]={name,v:!esPartida(o),ua:now()};
+ saveReal();renderGastos();}
+
+function modOneOff(){
+ const c=calc();
+ const pend=c.hitos.filter(o=>c.uniReal[o.name]==null).sort((a,b)=>b.amount-a.amount);
+ if(!pend.length){alert('Ya cargaste todos los hitos del plan. Los peajes y el mantenimiento se cargan con los botones normales de gasto.');return;}
+ openMod(`<h2>Costo único del plan</h2>
+  <div class="hint" style="margin:0 0 12px">Elegí el ítem y cargá lo que salió DE VERDAD. Se guarda como un gasto normal y el desvío contra el estimado se calcula solo.</div>
+  <div><label>¿Cuál?</label><select id="ooSel" onchange="ooPick()">
+   ${pend.map(o=>`<option value="${esc(o.name)}" data-amt="${o.amount}" data-cat="${esc(o.cat||'otros')}">${esc(o.name.slice(0,70))}${o.name.length>70?'…':''} — est. $${n0(o.amount)}</option>`).join('')}</select></div>
+  <div class="note" id="ooEst"></div>
+  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
+  <button class="btn p" style="flex:1" onclick="ooNext()">Cargar el gasto</button></div>`);
+ ooPick();}
+function ooPick(){
+ const o=$('#ooSel').selectedOptions[0];
+ $('#ooEst').innerHTML=`El plan estimaba <b>${usd(+o.dataset.amt)}</b> para este ítem.`;}
+function ooNext(){
+ const o=$('#ooSel').selectedOptions[0];
+ const name=o.value, amt=+o.dataset.amt, cat=o.dataset.cat;
+ // Mapeo de la categoría del presupuesto a la del gasto.
+ const MAP={pasajes:'otros',tramites:'tramites',mantenimiento:'auto',peajes:'peajes',entretenimiento:'entretenimiento'};
+ closeMod();
+ modExp(MAP[cat]||'otros',{oneOff:name,est:amt});}
 
 function modInc(){
  const x=curNow(),cs=Object.keys(FX_SEED);
@@ -848,14 +917,10 @@ function renderRuta(){
   h+=`<div class="card"><div style="display:flex;gap:9px;align-items:baseline">
    <b style="font-size:16px">Día ${n}</b><span class="muted">${fDate(d.date)}</span>
    <span style="margin-left:auto;font-weight:800">${usd(g)}</span></div>
-   <div style="margin-top:3px;font-size:14.5px">${esc(d.place||(s?s.n:'—'))} ${d.mood||''}</div>
+   <div style="margin-top:3px;font-size:14.5px">${esc(d.place||(s?s.n:'—'))}</div>
    ${d.sleepType?`<div class="muted">🛏️ ${esc(d.sleepType)}${d.sleepName?' · '+esc(d.sleepName):''}</div>`:''}
-   ${d.moment?`<div class="note">“${esc(d.moment)}”</div>`:''}
-   ${(d.photos&&d.photos.length)?`<div class="ph" data-day="${d.date}"></div>`:''}</div>`;});
+</div>`;});
  $('#v-ruta').innerHTML=h;
- days.forEach(d=>{const b=$(`.ph[data-day="${d.date}"]`);if(!b)return;
-  b.innerHTML=(d.photos||[]).map(k=>`<img data-k="${k}">`).join('');
-  (d.photos||[]).forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});});
  drawMap();}
 function drawMap(){
  if(window.__noLeaflet||typeof L==='undefined'){$('#map').innerHTML='<div style="padding:24px;text-align:center;color:var(--tx2)">Sin conexión: el mapa necesita internet. La bitácora de abajo funciona igual.</div>';return;}
@@ -881,7 +946,7 @@ function drawMap(){
 let finTab='mov';
 function renderGastos(){
  const c=calc();
- let h=`<div class="seg" style="margin-bottom:14px">${[['mov','Movimientos'],['comp','Plan vs Real'],['uni','Costos únicos']]
+ let h=`<div class="seg" style="margin-bottom:14px">${[['mov','Movimientos'],['comp','Plan vs Real'],['uni','Hitos y partidas']]
   .map(([k,t])=>`<button class="${finTab===k?'on':''}" onclick="finTab='${k}';renderGastos()">${t}</button>`).join('')}</div>`;
 
  if(finTab==='mov'){
@@ -899,7 +964,7 @@ function renderGastos(){
     const t=all.filter(y=>y.date===x.date&&!y._i).reduce((a,y)=>a+(y.usd||0),0);
     h+=`<div class="sec-t">${fDate(x.date)} · ${usd(t)}</div><div class="card">`;}
    h+=`<div class="li"><div class="ic">${x._i?'💵':CATS[x.cat].e}</div>
-    <div class="m"><b>${esc(x.desc)}</b><span>${n0(x.amt)} ${x.cur}${x.cur!=='USD'?' · TC '+n1(x.rate):''} · ${esc(x.country||'')}</span></div>
+    <div class="m"><b>${esc(x.desc)} ${x.oneOff?'<span class="tag pu" style="font-size:9.5px">costo único</span>':''}</b><span>${n0(x.amt)} ${x.cur}${x.cur!=='USD'?' · TC '+n1(x.rate):''} · ${esc(x.country||'')}</span></div>
     <div class="a" ${x._i?'style="color:var(--ok)"':''}>${x._i?'+':''}${usd(x.usd)}</div>
     <button class="x" onclick="delRec('${x._f?'fuel':x._i?'inc':'exp'}','${x.id}')">✕</button></div>`;
    const nx=all[ix+1];if(!nx||nx.date!==x.date)h+=`</div>`;});}
@@ -910,6 +975,22 @@ function renderGastos(){
    <tr><td>Real corriente a la fecha</td><td class="n">${usd(c.realCorr)}</td></tr>
    <tr style="font-weight:800"><td>Desvío</td><td class="n ${c.desvio>0?'pos':'neg'}">${sgn(c.desvio)} (${c.desvioPct>=0?'+':''}${n0(c.desvioPct)}%)</td></tr></table>
    <div class="note">Positivo = gastando de más. Es el único número sobre el que podés actuar mañana: los costos únicos ya están decididos.</div></div>`;
+  h+=`<div class="card"><h3>Costos únicos a la fecha</h3><table>
+   <tr><td>Estimado de lo ya pagado</td><td class="n">${usd(c.uniEst)}</td></tr>
+   <tr><td>Salió realmente</td><td class="n">${usd(c.uniPag)}</td></tr>
+   <tr style="font-weight:800"><td>Desvío</td><td class="n ${c.uniPag-c.uniEst>0?'pos':'neg'}">${c.uniEst?sgn(c.uniPag-c.uniEst):'—'}</td></tr>
+   <tr><td>Pendientes de pagar</td><td class="n">${usd(c.uniPend)}</td></tr></table>
+   <div class="hint">Se controlan ítem por ítem y no se prorratean: caen en fechas puntuales y repartirlos entre 131 días sería mentir.</div></div>`;
+  const resto=c.realTotal-c.realCorr-c.uniPag;
+  h+=`<div class="card" style="border-top:3px solid var(--purple)"><h3>Todo junto</h3><table>
+   <tr><td>Gasto corriente (nafta, comida, dormir, otros)</td><td class="n">${usd(c.realCorr)}</td></tr>
+   <tr><td>Hitos y partidas</td><td class="n">${usd(c.uniPag)}</td></tr>
+   ${Math.abs(resto)>0.5?`<tr><td>Otros gastos sueltos</td><td class="n">${usd(resto)}</td></tr>`:''}
+   <tr style="font-weight:700"><td>Total gastado</td><td class="n">${usd(c.realTotal)}</td></tr>
+   <tr><td>Ingresos de ruta</td><td class="n neg">−${n0(c.income)}</td></tr>
+   <tr style="font-weight:800"><td>Neto</td><td class="n">${usd(c.realTotal-c.income)}</td></tr>
+   <tr><td>Presupuesto total del plan</td><td class="n">${usd(c.planTotal)}</td></tr></table>
+   <div class="hint">"Otros sueltos" son gastos de categorías que no están atadas a ninguna partida ni a ningún hito. Si esa línea crece, conviene convertir ese ítem del plan en partida.</div></div>`;
   h+=`<div class="card"><h3>Por categoría</h3><table>
    <tr><th>Categoría</th><th class="n">Real</th><th class="n">%</th></tr>
    ${Object.keys(CATS).filter(k=>c.byCat[k]>0).sort((a,b)=>c.byCat[b]-c.byCat[a]).map(k=>
@@ -923,33 +1004,59 @@ function renderGastos(){
    <tr style="font-weight:800"><td>TOTAL</td><td class="n">${usd(c.planTotal)}</td></tr></table></div>`;}
 
  if(finTab==='uni'){
-  let est=0;c.oneOff.forEach(o=>{if((REAL.oneoff[o.name]||{}).paid)est+=o.amount||0;});
-  const d=c.uniPag-est;
+  const d=c.uniPag-c.uniEst, pagados=c.hitos.filter(o=>c.uniReal[o.name]!=null).length;
   h+=`<div class="kpis" style="margin-bottom:14px">
-   <div class="kpi ok"><div class="l">Pagados</div><div class="v">${usd(c.uniPag)}</div><div class="d">${c.oneOff.filter(o=>(REAL.oneoff[o.name]||{}).paid).length} de ${c.oneOff.length}</div></div>
-   <div class="kpi warn"><div class="l">Pendientes</div><div class="v">${usd(c.uniPend)}</div><div class="d">Ya comprometidos</div></div></div>`;
-  if(est>0)h+=`<div class="card"><h3>Lo pagado, contra lo estimado</h3><table>
-   <tr><td>Estimado del plan</td><td class="n">${usd(est)}</td></tr>
-   <tr><td>Salió realmente</td><td class="n">${usd(c.uniPag)}</td></tr>
-   <tr style="font-weight:800"><td>Δ</td><td class="n ${d>0?'pos':'neg'}">${sgn(d)} (${(d>=0?'+':'')+n0(d/est*100)}%)</td></tr></table>
-   <div class="note">Si el desvío se mantiene, los ${usd(c.uniPend)} pendientes van a salir cerca de <b>${usd(c.uniPend*(1+d/est))}</b>.</div></div>`;
-  const cats={};c.oneOff.forEach(o=>{(cats[o.cat||'otros']=cats[o.cat||'otros']||[]).push(o);});
+   <div class="kpi ok"><div class="l">Ejecutado</div><div class="v">${usd(c.uniPag)}</div>
+    <div class="d">${pagados} de ${c.hitos.length} hitos + lo consumido de las partidas</div></div>
+   <div class="kpi warn"><div class="l">Falta</div><div class="v">${usd(c.uniPend)}</div>
+    <div class="d">Hitos sin pagar + saldo de las partidas</div></div></div>`;
+
+  // ---- PARTIDAS ----
+  const pk=Object.keys(c.partidas);
+  if(pk.length){
+   h+=`<div class="sec-t">Partidas — bolsas que se van consumiendo</div>`;
+   h+=`<div class="banner i">Estas no se tildan: se cargan como gastos normales desde <b>Hoy</b> (🔧 Auto para mantenimiento, 🛣️ Peajes) y la bolsa se descuenta sola. Un pinchazo en Perú y otro en Bolivia son dos movimientos, no uno.</div>`;
+   pk.forEach(k=>{
+    const p=c.partidas[k], pct=p.plan?Math.min(100,p.real/p.plan*100):0;
+    const g=p.real>p.plan?'bad':pct>80?'warn':'ok';
+    h+=`<div class="card"><h3>${esc(k.charAt(0).toUpperCase()+k.slice(1))}
+      <span class="r">${p.movs} movimiento${p.movs===1?'':'s'}</span></h3>
+     <div style="display:flex;align-items:baseline;gap:8px">
+      <b style="font-size:26px;color:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})">${usd(p.real)}</b>
+      <span class="muted">de ${usd(p.plan)} presupuestados</span>
+      <span style="margin-left:auto;font-weight:800;color:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})">${n0(pct)}%</span></div>
+     <div class="bar"><i style="width:${pct}%;background:var(--${g==='ok'?'ok':g==='warn'?'warn':'bad'})"></i></div>
+     <div class="hint">${p.real>p.plan
+       ? `<b>Te pasaste ${usd(p.real-p.plan)}.</b> No es grave por sí solo, pero sale del colchón de contingencia.`
+       : `Quedan ${usd(p.plan-p.real)} en la bolsa.`}</div>
+     <div style="margin-top:10px">${p.items.map(o=>`<div class="li" style="padding:7px 0">
+       <div class="m"><b style="white-space:normal;font-weight:600;font-size:13px">${esc(o.name)}</b></div>
+       <div class="a" style="font-size:13px;color:var(--tx2)">${usd(o.amount)}</div>
+       <button class="x" style="font-size:11px;font-weight:700" onclick="togPartida(${q(o.name)})" title="Pasar a hito">→ hito</button></div>`).join('')}</div>
+     </div>`;});}
+
+  // ---- HITOS ----
+  h+=`<div class="sec-t">Hitos — pasan una sola vez</div>`;
+  h+=`<div class="banner i">Se cargan desde <b>Hoy → Hito del plan</b>. Quedan como un gasto normal en Movimientos y el desvío contra el estimado se calcula solo.</div>`;
+  if(c.uniEst>0)h+=`<div class="card"><h3>Lo pagado, contra lo estimado</h3><table>
+   <tr><td>Estimado del plan</td><td class="n">${usd(c.uniEst)}</td></tr>
+   <tr><td>Salió realmente</td><td class="n">${usd(c.uniPag-Object.values(c.partidas).reduce((a,p)=>a+p.real,0))}</td></tr>
+   <tr style="font-weight:800"><td>Δ</td><td class="n ${d>0?'pos':'neg'}">${sgn(d)} (${(d>=0?'+':'')+n0(d/c.uniEst*100)}%)</td></tr></table>
+   <div class="note">Si el desvío se mantiene, los hitos que faltan van a salir cerca de un ${n0(Math.abs(d/c.uniEst*100))}% ${d>0?'más':'menos'} de lo estimado. Eso es lo que hay que mirar: no cuánto salió el ferry, sino qué le dice sobre el Darién.</div></div>`;
+  const cats={};c.hitos.forEach(o=>{(cats[o.cat||'otros']=cats[o.cat||'otros']||[]).push(o);});
   Object.keys(cats).forEach(k=>{
    h+=`<div class="sec-t">${esc(k.charAt(0).toUpperCase()+k.slice(1))}</div><div class="card">`;
-   cats[k].sort((a,b)=>b.amount-a.amount).forEach(o=>{const s=REAL.oneoff[o.name]||{};
-    h+=`<div class="li"><button class="x" style="font-size:19px;color:${s.paid?'var(--ok)':'var(--tx3)'}" onclick="togOneOff(${q(o.name)})">${s.paid?'☑':'☐'}</button>
-     <div class="m"><b style="white-space:normal;${s.paid?'opacity:.55':''}">${esc(o.name)}</b>
-     ${s.paid&&s.costUsd!=null&&s.costUsd!==o.amount?`<span class="${s.costUsd>o.amount?'pos':'neg'}">real ${usd(s.costUsd)} · ${sgn(s.costUsd-o.amount)} vs plan</span>`:''}</div>
-     <div class="a">${usd(o.amount)}<span>${s.paid?'pagado':'estimado'}</span></div></div>`;});
-   h+=`</div>`;});}
+   cats[k].sort((a,b)=>b.amount-a.amount).forEach(o=>{
+    const real=c.uniReal[o.name], pag=real!=null, dd=pag?real-o.amount:0;
+    h+=`<div class="li">
+     <div class="ic" style="${pag?'background:#e8f5e9;color:var(--ok)':'background:#f1f5f9;color:var(--tx3)'};font-size:15px">${pag?'✓':'○'}</div>
+     <div class="m"><b style="white-space:normal;${pag?'opacity:.6':''}">${esc(o.name)}</b>
+      ${pag?`<span class="${dd>0?'pos':'neg'}">Salió ${usd(real)} · ${sgn(dd)} vs el estimado</span>`:'<span>pendiente</span>'}</div>
+     <div class="a">${usd(pag?real:o.amount)}<span>${pag?'real':'estimado'}</span></div>
+     ${pag?'':`<button class="x" style="font-size:11px;font-weight:700" onclick="togPartida(${q(o.name)})" title="Pasar a partida">→ partida</button>`}</div>`;});
+   h+=`</div>`;});
+  h+=`<div class="hint" style="padding:0 4px">¿Un ítem se te repite en la ruta? Tocá <b>→ partida</b> y pasa a ser una bolsa que se consume con gastos sueltos. Al revés también.</div>`;}
  $('#v-gastos').innerHTML=h;}
-function togOneOff(name){
- const s=REAL.oneoff[name]||{};
- if(s.paid){REAL.oneoff[name]={paid:false,ua:now()};saveReal();renderAll();return;}
- const o=(PLAN.budget.oneOff||[]).find(x=>x.name===name);
- const v=prompt('¿Cuánto salió realmente en USD?\n\n'+name+'\n\nEstimado: '+(o?o.amount:'?'),o?o.amount:'');
- if(v===null)return;
- REAL.oneoff[name]={paid:true,costUsd:parseFloat(v)||0,ua:now()};saveReal();renderAll();}
 
 /* --------------------------------------------------------------------------
    INGRESOS
@@ -1340,90 +1447,6 @@ function saveTarea(){const n=$('#tN').value.trim();if(!n)return;const id=uid(),t
  saveReal();closeMod();renderRutinas();}
 
 /* --------------------------------------------------------------------------
-   SAMINETA
-   -------------------------------------------------------------------------- */
-let samTab='momentos';
-function renderSamineta(){
- const c=calc(),days=lDays().filter(d=>d.moment||(d.photos&&d.photos.length));
- const ideas=Object.values(REAL.ideasC).filter(i=>!i.del).sort((a,b)=>(a.st==='publicado')-(b.st==='publicado'));
- let h=`<div class="seg" style="margin-bottom:14px">${[['momentos','Momentos capturados'],['series','Series'],['ideas','Ideas y calendario']]
-  .map(([k,t])=>`<button class="${samTab===k?'on':''}" onclick="samTab='${k}';renderSamineta()">${t}</button>`).join('')}</div>`;
-
- h+=`<div class="kpis" style="margin-bottom:14px">
-  <div class="kpi pu"><div class="l">Momentos capturados</div><div class="v">${days.length}</div><div class="d">de ${c.dayN} días de viaje</div></div>
-  <div class="kpi pu"><div class="l">Fotos</div><div class="v">${lDays().reduce((a,d)=>a+((d.photos||[]).length),0)}</div><div class="d">guardadas en este dispositivo</div></div>
-  <div class="kpi pu"><div class="l">Ideas en el banco</div><div class="v">${ideas.filter(i=>i.st!=='publicado').length}</div>
-   <div class="d">${ideas.filter(i=>i.st==='publicado').length} ya publicadas</div></div></div>`;
-
- if(samTab==='momentos'){
-  // Ficha de datos lista para copiar: el ángulo diferencial de la cuenta.
-  const ld=lDays().slice(-1)[0];
-  const kmHoy=(()=>{const d=lDays().filter(x=>x.odo);return d.length>1?(d[d.length-1].odo-d[d.length-2].odo)*KM_PER_MI:0;})();
-  const gHoy=[...c.exps.filter(e=>e.date===c.t),...c.fuels.filter(f=>f.date===c.t)].reduce((a,x)=>a+(x.usd||0),0);
-  const ficha=`Día ${c.dayN} de ${c.B.days} · ${(c.curStop||{}).country||''}\n`+
-   `📍 ${(ld&&ld.place)||((c.curStop||{}).n||'')}\n`+
-   `🛣️ ${n0(kmHoy)} km hoy · ${n0(c.kmReal)} km acumulados\n`+
-   `💸 USD ${n0(gHoy)} gastados hoy · promedio USD ${n0(c.burn)}/día\n`+
-   `⛽ ${c.mpgReal?n1(c.mpgReal)+' MPG reales':'—'}\n`+
-   `🛏️ ${(ld&&ld.sleepType)||'—'}`;
-  h+=`<div class="card" style="border-top:3px solid var(--purple)"><h3>📊 Ficha de datos de hoy <span class="r">para pegar en el posteo</span></h3>
-   <textarea rows="7" id="fichaTxt" readonly style="font-family:ui-monospace,monospace;font-size:12.5px">${esc(ficha)}</textarea>
-   <div class="btnrow mt"><button class="btn b sm" onclick="copiarFicha()">Copiar</button></div>
-   <div class="note">Este es el diferencial de La Samineta: hay miles de cuentas con atardeceres, ninguna publica los números reales. Sale automático de lo que cargás en Hoy.</div></div>`;
-  if(!days.length)h+=`<div class="card"><div class="muted">Todavía no hay momentos. Cada línea que escribís en <b>Hoy → El momento del día</b> aparece acá.</div></div>`;
-  days.slice().reverse().forEach(d=>{
-   const n=c.B.start?dDiff(c.B.start,d.date)+1:0;
-   h+=`<div class="card"><div style="display:flex;gap:9px;align-items:baseline">
-    <b>Día ${n}</b><span class="muted">${fDate(d.date)} · ${esc(d.place||'')}</span></div>
-    ${d.moment?`<div class="note">“${esc(d.moment)}”</div>`:''}
-    ${(d.photos||[]).length?`<div class="ph" data-sam="${d.date}"></div>`:''}
-    <div class="btnrow mt"><button class="btn sm" onclick="momentoAIdea('${d.date}')">➜ Convertir en idea de posteo</button></div></div>`;});}
-
- if(samTab==='series'){
-  h+=`<div class="hint" style="padding:0 4px 10px">Una cuenta se sostiene con formatos repetibles, no con inspiración. Estas siete están atadas a datos que la app ya calcula.</div><div class="grid">`;
-  SERIES_SEED.forEach(s=>{
-   h+=`<div class="card" style="margin:0"><div style="display:flex;gap:8px;align-items:baseline">
-    <b style="flex:1;font-size:15px">${esc(s.t)}</b><span class="tag b">${esc(s.fmt)}</span></div>
-    <div class="hint">${esc(s.note)}</div>
-    <div class="btnrow mt"><button class="btn sm" onclick="serieAIdea(${q(s.t)},${q(s.fmt)})">＋ Anotar una de esta serie</button></div></div>`;});
-  h+=`</div>`;}
-
- if(samTab==='ideas'){
-  h+=`<div class="btnrow" style="margin-bottom:12px"><button class="btn" onclick="modIdeaC()">＋ Nueva idea</button></div>`;
-  if(!ideas.length)h+=`<div class="card"><div class="muted">Sin ideas guardadas. Convertí un momento o anotá una de una serie.</div></div>`;
-  ideas.forEach(i=>{
-   h+=`<div class="card"><div style="display:flex;gap:8px;align-items:baseline">
-    <b style="flex:1;font-size:15px;${i.st==='publicado'?'opacity:.55':''}">${esc(i.t)}</b>
-    <span class="tag ${i.st==='publicado'?'ok':i.st==='editado'?'b':''}">${esc(i.st)}</span></div>
-    <div class="muted">${esc(i.fmt||'')}${i.fecha?' · para el '+fDate(i.fecha):''}</div>
-    ${i.note?`<div class="hint">${esc(i.note)}</div>`:''}
-    <div class="seg mt">${['idea','grabado','editado','publicado'].map(s=>`<button class="${i.st===s?'on':''}" onclick="setIdeaC('${i.id}','${s}')" style="font-size:12px">${s}</button>`).join('')}</div></div>`;});}
-
- $('#v-samineta').innerHTML=h;
- days.forEach(d=>{const b=$(`.ph[data-sam="${d.date}"]`);if(!b)return;
-  b.innerHTML=(d.photos||[]).map(k=>`<img data-k="${k}">`).join('');
-  (d.photos||[]).forEach(async k=>{const u=await blobGet(k);const i=b.querySelector(`img[data-k="${k}"]`);if(i&&u)i.src=u;});});}
-function copiarFicha(){const t=$('#fichaTxt');t.select();
- navigator.clipboard?navigator.clipboard.writeText(t.value).then(()=>alert('Copiado.')):document.execCommand('copy');}
-function momentoAIdea(date){const d=REAL.days[date];if(!d)return;const id=uid();
- REAL.ideasC[id]={id,t:d.moment||('Día '+fDate(date)),fmt:'Reel',st:'idea',note:'Del '+fDate(date)+' — '+(d.place||''),fecha:'',ua:now()};
- saveReal();renderAll();}
-function serieAIdea(t,f){const id=uid();
- REAL.ideasC[id]={id,t,fmt:f,st:'idea',note:'',fecha:today(),ua:now()};saveReal();renderAll();}
-function setIdeaC(id,s){const i=REAL.ideasC[id];if(i){i.st=s;i.ua=now();saveReal();renderAll();}}
-function modIdeaC(){
- openMod(`<h2>Nueva idea de contenido</h2>
-  <div><label>Idea</label><input id="cT" autofocus></div>
-  <div class="row mt"><div><label>Formato</label><select id="cF"><option>Reel</option><option>Carrusel</option><option>Foto</option><option>Historia</option><option>YouTube</option></select></div>
-   <div><label>Para cuándo</label><input id="cD" type="date"></div></div>
-  <div class="mt"><label>Notas</label><textarea id="cN" rows="3"></textarea></div>
-  <div class="btnrow mt" style="margin-top:16px"><button class="btn" style="flex:1" onclick="closeMod()">Cancelar</button>
-  <button class="btn p" style="flex:1" onclick="saveIdeaC()">Guardar</button></div>`);}
-function saveIdeaC(){const t=$('#cT').value.trim();if(!t)return;const id=uid();
- REAL.ideasC[id]={id,t,fmt:$('#cF').value,fecha:$('#cD').value,note:$('#cN').value,st:'idea',ua:now()};
- saveReal();closeMod();renderAll();}
-
-/* --------------------------------------------------------------------------
    CAMIONETA
    -------------------------------------------------------------------------- */
 let camTab='estado';
@@ -1705,7 +1728,7 @@ function importJson(i){const f=i.files[0];if(!f)return;const fr=new FileReader()
    RENDER + NAV
    -------------------------------------------------------------------------- */
 const R={tablero:renderTablero,hoy:renderHoy,ruta:renderRuta,gastos:renderGastos,ingresos:renderIngresos,
- tramites:renderTramites,cocina:renderCocina,rutinas:renderRutinas,samineta:renderSamineta,
+ tramites:renderTramites,cocina:renderCocina,rutinas:renderRutinas,
  camioneta:renderCamioneta,guitarra:renderGuitarra,ajustes:renderAjustes};
 function renderHeader(){
  const c=calc();
@@ -1731,6 +1754,17 @@ document.querySelectorAll('#tabs button').forEach(b=>{
  if(!REAL.cfg)REAL.cfg={odo0:null,ua:0};
  try{YO=localStorage.getItem('vr_yo')||null;}catch(e){}
  if(YO&&!PERSONAS[YO])YO=null;
+ // Reset duro. Al subir este token se borra todo lo cargado (también en
+ // Firestore, porque el doc vacío se sincroniza) y se vuelve a sembrar.
+ const RESET='r3-2026-08';
+ let seBorro=false;
+ if(REAL.cfg.reset!==RESET){
+  KEYS.forEach(k=>{REAL[k]={};});
+  const odo=REAL.cfg.odo0;
+  REAL.cfg={odo0:odo,reset:RESET,resetAt:now(),ua:now()};
+  try{indexedDB.deleteDatabase('vidaruta');}catch(e){}
+  seBorro=true;
+ }
  // Semillas: solo se cargan la primera vez. Si borrás algo, no vuelve.
  if(!REAL.cfg.seed1){
   IDEAS_SEED.forEach(i=>{if(!REAL.ideas[i.id])REAL.ideas[i.id]={...i,ua:now()};});
@@ -1750,56 +1784,10 @@ document.querySelectorAll('#tabs button').forEach(b=>{
  renderAll();
  lsSet(LS_REAL,REAL);
  initFirebase();
+ // Si acabamos de borrar, empujamos el documento vacío para que el reset
+ // llegue también al otro teléfono en vez de quedar solo en este.
+ if(seBorro)setTimeout(()=>{saveReal();},2500);
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-})();
-</script>
-<style>
-#vrInstall{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;
- display:none;align-items:center;gap:12px;background:#1e2a32;color:#fff;border:1px solid #37474f;
- border-radius:14px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,.28);max-width:520px;margin:0 auto}
-#vrInstall img{width:42px;height:42px;border-radius:10px;flex-shrink:0}
-#vrInstall .t{flex:1;min-width:0;line-height:1.3}
-#vrInstall .t b{display:block;font-size:14px}
-#vrInstall .t span{font-size:11.5px;color:#b0bec5}
-#vrInstall button{border:none;border-radius:9px;padding:10px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
-#vrGo{background:#f9a825;color:#1e2a32}
-#vrNo{background:none;color:#90a4ae;padding:10px 4px}
-</style>
-
-<div id="vrInstall">
-  <img src="icon-192x192.png" alt="">
-  <div class="t"><b>Instalar Vida de Ruta</b><span id="vrTxt">Queda como app, funciona sin internet</span></div>
-  <button id="vrGo">Instalar</button>
-  <button id="vrNo">&times;</button>
-</div>
-
-<script>
-(function(){
- var box=document.getElementById('vrInstall'),go=document.getElementById('vrGo'),
-     no=document.getElementById('vrNo'),txt=document.getElementById('vrTxt'),deferred=null;
- function show(){box.style.display='flex';}
- function hide(){box.style.display='none';}
-
- // Si ya esta instalada, no molestar
- var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
- if(standalone) return;
- if(localStorage.getItem('vr_install_no')==='1') return;
-
- // Android / Chrome / Edge: instalacion real
- window.addEventListener('beforeinstallprompt',function(e){
-  e.preventDefault();deferred=e;show();
- });
-
- go.onclick=function(){
-  if(deferred){deferred.prompt();deferred.userChoice.then(function(){deferred=null;hide();});}
-  else{alert('En iPhone: toca Compartir y despues "Agregar a pantalla de inicio".');}
- };
- no.onclick=function(){localStorage.setItem('vr_install_no','1');hide();};
- window.addEventListener('appinstalled',function(){hide();});
-
- // iPhone/iPad con Safari: no existe beforeinstallprompt, mostramos instruccion
- var iOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
- if(iOS){txt.textContent='Compartir → Agregar a pantalla de inicio';go.textContent='Como';show();}
 })();
 </script>
 </body>
